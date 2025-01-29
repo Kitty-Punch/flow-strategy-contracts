@@ -1,0 +1,23 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+fs_permissions = [{ access = "read-write", path = "./"}]
+evm_version = "cancun"
+
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
+
+remappings = [
+    "forge-std-1.9.4/=dependencies/forge-std/",
+    "solady/=lib/solady/",
+    "@openzeppelin/=lib/openzeppelin-contracts/"
+]
+
+[rpc_endpoints]
+mainnet = "https://mainnet.evm.nodes.onflow.org"
+local = "http://localhost:8545"
+
+[invariant]
+# runs = 50
+# depth = 40
+# fail_on_revert = false

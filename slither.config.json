@@ -1,0 +1,17 @@
+{
+  "filter_paths": "(dependencies/|lib/|mocks/|test/|script/|upgradedProtocol/)",
+  "detectors_to_exclude": "conformance-to-solidity-naming-conventions,incorrect-versions-of-solidity,solc-version,timestamp",
+  "exclude_informational": false,
+  "exclude_low": false,
+  "exclude_medium": false,
+  "exclude_high": false,
+  "disable_color": false,
+  "legacy_ast": false,
+  "exclude_dependencies": true,
+  "solc_remaps": [
+    "@openzeppelin-contracts/=dependencies/openzeppelin-contracts/",
+    "@openzeppelin-contracts-upgradeable/=dependencies/openzeppelin-contracts-upgradeable/",
+    "forge-std-1.9.4/=dependencies/forge-std/",
+    "solady-0.0.233/=dependencies/solady/"
+  ]
+}

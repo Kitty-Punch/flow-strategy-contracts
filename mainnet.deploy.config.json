@@ -1,0 +1,13 @@
+{
+    "depositCap": 10000000000000000000000,
+    "depositConversionPremium": 0,
+    "depositConversionRate": 30000,
+    "depositSigner": "0x0000000000000000000000000000000000000001",
+    "lst": "0x0000000000000000000000000000000000000000",
+    "proposalThreshold": 0,
+    "quorumPercentage": 4,
+    "usdc": "0x0000000000000000000000000000000000000000",
+    "votingDelay": 7200,
+    "votingPeriod": 50400,
+    "whiteListEnabled": false
+}

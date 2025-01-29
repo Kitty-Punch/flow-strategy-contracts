@@ -1,0 +1,19 @@
+{
+    "name": "@kittypunch/flow-strategy-contracts",
+    "version": "2.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+      "report": "forge coverage --report lcov && genhtml -o report --branch-coverage lcov.info",
+      "deploy:test": "dotenv -e .env -- bash -c 'forge script script/Deploy.s.sol --rpc-url \"$RPC_URL\" --private-key \"$PRIVATE_KEY\"'",
+      "deploy:prod": "dotenv -e .env -- bash -c 'forge script script/Deploy.s.sol --rpc-url \"$RPC_URL\" --private-key \"$PRIVATE_KEY\" --broadcast'",
+      "verify": "dotenv -e .env -- bash -c 'tsx ts-scripts/verify-contracts.ts'"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+      "dotenv-cli": "^8.0.0",
+      "tsx": "^4.19.2"
+    }
+  }

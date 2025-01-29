@@ -1,0 +1,20 @@
+# Compiler files
+cache/
+out/
+
+# Ignores development broadcast logs
+/broadcast
+
+# Docs
+docs/
+
+# Dotenv file
+!.env.template
+.env**
+**.env
+
+dependencies/
+typescript/
+node_modules/
+*.log
+report/
