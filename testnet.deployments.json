@@ -1,0 +1,17 @@
+{
+  "AtmAuction": "0x5fF45B5Cd7d1E20B9BcA59ff5Ef85911EAa186FA",
+  "BondAuction": "0x9b027064fC24A2B6E96C5579270Bb80Ca6EfdaDc",
+  "Deposit": "0xa04751fc039364D0B9A8b4daD3e9A0d8F2F13d9A",
+  "DepositCap": 5000000000000000000000000,
+  "DepositConversionPremium": 0,
+  "DepositConversionRate": 10,
+  "FlowStrategy": "0x4848643E26Af00f046396983e713b6F28cb86e99",
+  "FlowStrategyGovernor": "0xe4ba221Ff640142cD4e9653E2391A74c5aa192EE",
+  "lst": "0x0000000000000000000000000000000000000000",
+  "proposalThreshold": 0,
+  "quorumPercentage": 4,
+  "startBlock": 29146023,
+  "usdc": "0xd7d43ab7b365f0d0789aE83F4385fA710FfdC98F",
+  "votingDelay": 7200,
+  "votingPeriod": 50400
+}

@@ -5,12 +5,13 @@ import {SafeTransferLib} from "solady/src/utils/SafeTransferLib.sol";
 import {IFlowStrategy} from "./interfaces/IFlowStrategy.sol";
 import {SignatureCheckerLib} from "solady/src/utils/SignatureCheckerLib.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {AllowableAccounts} from "./AllowableAccounts.sol";
 
-contract Deposit is Ownable, ReentrancyGuard {
+contract Deposit is Ownable, ReentrancyGuard, AllowableAccounts {
 
   uint256 public immutable CONVERSION_RATE;
-  uint256 constant MIN_DEPOSIT = 1e18;
-  uint256 constant MAX_DEPOSIT = 100e18;
+  uint256 public constant MIN_DEPOSIT = 1_000e18;
+  uint256 public constant MAX_DEPOSIT = 5_000_000e18;
 
   error DepositAmountTooLow();
   error DepositAmountTooHigh();
@@ -18,52 +19,59 @@ contract Deposit is Ownable, ReentrancyGuard {
   error AlreadyRedeemed();
   error DepositCapExceeded();
   error InvalidConversionPremium();
-  error InvalidSignature();
   error InvalidCall();
+  error NotWhitelisted();
+
+  event WhiteListEnabledSet(bool whiteListEnabled);
+  event Deposit(address indexed user, uint256 indexed value, uint256 indexed amount, uint256 conversionRate);
+  event OperatorSet(address indexed operator);
 
   address public immutable ethStrategy;
-  address public signer;
+  address public operator;
 
   mapping(address => bool) public hasRedeemed;
 
   uint256 public immutable conversionPremium;
-    bool public immutable whiteListEnabled;
+  bool public whiteListEnabled;
   uint256 public constant DENOMINATOR_BP = 100_00;
 
-  uint256 private depositCap_;
+  uint256 private depositCap;
+
+  modifier onlyOperator() {
+    require(msg.sender == operator, "Caller is not an operator");
+    _;
+  }
 
   /// @notice constructor
   /// @param _owner the owner of the deposit contract
   /// @param _ethStrategy the address of the ethstrategy token
-  /// @param _signer the address of the signer
+  /// @param _operator the address of the operator
   /// @param _conversionRate the conversion rate from eth to ethstrategy
   /// @param _conversionPremium the conversion premium in basis points (0 - 100_00)
   /// @param _depositCap the maximum global deposit cap
-  constructor(address _owner, address _ethStrategy, address _signer, uint256 _conversionRate,uint256 _conversionPremium, uint256 _depositCap, bool _whiteListEnabled) {
+  constructor(address _owner, address _ethStrategy, address _operator, uint256 _conversionRate,uint256 _conversionPremium, uint256 _depositCap, bool _whiteListEnabled) {
     if(_conversionPremium > DENOMINATOR_BP) revert InvalidConversionPremium();
     CONVERSION_RATE = _conversionRate;
     _initializeOwner(_owner);
     ethStrategy = _ethStrategy;
-    signer = _signer;
+    operator = _operator;
     conversionPremium = _conversionPremium;
-    depositCap_ = _depositCap;
+    depositCap = _depositCap;
     whiteListEnabled = _whiteListEnabled;
   }
 
-  /// @notice deposit eth and mint ethstrategy
-  /// @param signature the signature of the signer for the depositor
-  function deposit(bytes calldata signature) external payable nonReentrant {
+  /// @notice deposit flow and mint flow strategy
+  function deposit() external payable nonReentrant returns (uint256) {
     uint256 value = msg.value;
-    uint256 _depositCap = depositCap_;
+    uint256 _depositCap = depositCap;
     if (value > _depositCap) revert DepositCapExceeded();
-    depositCap_ = _depositCap - value;
+    depositCap = _depositCap - value;
 
     if (whiteListEnabled) {
+      if (!isWhitelisted(msg.sender)) revert NotWhitelisted();
+
       if (hasRedeemed[msg.sender]) revert AlreadyRedeemed();
       hasRedeemed[msg.sender] = true;
-
-      bytes32 hash = keccak256(abi.encodePacked(msg.sender));
-      if (!SignatureCheckerLib.isValidSignatureNow(signer, hash, signature)) revert InvalidSignature();
     }
 
     if (value < MIN_DEPOSIT) revert DepositAmountTooLow();
@@ -77,19 +85,35 @@ contract Deposit is Ownable, ReentrancyGuard {
     if (!success) revert DepositFailed();
 
     IFlowStrategy(ethStrategy).mint(msg.sender, amount);
+    emit Deposit(msg.sender, msg.value, amount, CONVERSION_RATE);
+    return amount;
   }
 
   /// @notice get the current deposit cap
   /// @return the current deposit cap
-  function depositCap() external view returns (uint256) {
-    return depositCap_;
+  function getDepositCap() external view returns (uint256) {
+    return depositCap;
   }
 
-  /// @notice set the signer
-  /// @param _signer the new signer
-  /// @dev only the owner can set the signer
-  function setSigner(address _signer) external onlyOwner {
-    signer = _signer;
+  /// @notice set the operator
+  /// @param _operator the new operator
+  /// @dev only the owner can set the operator
+  function setOperator(address _operator) external onlyOperator {
+    operator = _operator;
+    emit OperatorSet(_operator);
+  }
+
+  function setWhiteListEnabled(bool _whiteListEnabled) external onlyOperator {
+    whiteListEnabled = _whiteListEnabled;
+    emit WhiteListEnabledSet(_whiteListEnabled);
+  }
+
+  function addWhitelist(address[] memory _accounts) external onlyOperator {
+    _addWhitelist(_accounts);
+  }
+
+  function removeWhitelist(address[] memory _accounts) external onlyOperator {
+    _removeWhitelist(_accounts);
   }
 
   receive() external payable {

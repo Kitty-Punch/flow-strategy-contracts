@@ -25,7 +25,7 @@ contract FlowStrategyGovernor is
         uint256 _votingPeriod,
         uint256 _proposalThreshold
     )
-        Governor("EthStrategyGovernor")
+        Governor("FlowStrategyGovernor")
         GovernorVotes(_token)
         GovernorVotesQuorumFraction(_quorumPercentage)
     {

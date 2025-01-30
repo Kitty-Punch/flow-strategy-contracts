@@ -412,4 +412,49 @@ contract DutchAuctionTest is BaseTest {
     assertEq(endPrice, _endPrice, "endPrice not assigned correctly");
     assertEq(amount, _totalAmount - _amount, "amount not assigned correctly");
   }
+
+  function test_constructor_valid() public {
+    DutchAuction _dutchAuction = new DutchAuction(
+        address(ethStrategy),
+        address(governor),
+        address(usdcToken)
+    );
+
+    assertEq(_dutchAuction.ethStrategy(), address(ethStrategy), "ethStrategy address incorrect");
+    assertEq(_dutchAuction.paymentToken(), address(usdcToken), "paymentToken address incorrect");
+    assertEq(_dutchAuction.owner(), address(governor), "owner address incorrect");
+  }
+
+  function test_constructor_invalidStrategy() public {
+    vm.expectRevert("Strategy is invalid");
+    new DutchAuction(
+        address(0),
+        address(governor),
+        address(usdcToken)
+    );
+  }
+
+  function test_constructor_invalidGovernor() public {
+    vm.expectRevert("Governor is invalid");
+    new DutchAuction(
+        address(ethStrategy),
+        address(0),
+        address(usdcToken)
+    );
+  }
+
+  function test_constructor_invalidPaymentToken() public {
+    vm.expectRevert("Payment token is invalid");
+    new DutchAuction(
+        address(ethStrategy),
+        address(governor),
+        address(0)
+    );
+  }
+
+  function test_constructor_constants() public view {
+    assertEq(dutchAuction.MAX_START_TIME_WINDOW(), 7 days, "MAX_START_TIME_WINDOW incorrect");
+    assertEq(dutchAuction.MAX_DURATION(), 30 days, "MAX_DURATION incorrect");
+    assertEq(dutchAuction.ADMIN_ROLE(), 1, "ADMIN_ROLE incorrect");
+  }
 }

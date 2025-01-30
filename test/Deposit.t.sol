@@ -2,15 +2,10 @@ pragma solidity ^0.8.25;
 
 import {Test} from "forge-std/Test.sol";
 import {BaseTest} from "./utils/BaseTest.t.sol";
-import {FlowStrategyGovernor} from "../src/FlowStrategyGovernor.sol";
-import {IGovernor} from "@openzeppelin/contracts/governance/IGovernor.sol";
-import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import {DutchAuction} from "../src/DutchAuction.sol";
-import {console} from "forge-std/console.sol";
 import {Deposit} from "../src/Deposit.sol";
 import {ERC20} from "solady/src/tokens/ERC20.sol";
-import {Ownable} from "solady/src/auth/Ownable.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {AllowableAccounts} from "../src/AllowableAccounts.sol";
 
 contract DepositTest is BaseTest {
 
@@ -24,9 +19,9 @@ contract DepositTest is BaseTest {
 
   uint256 defaultConversionPremium = 0;
   uint256 defaultConversionRate = 30_000;
-  uint256 defaultDepositCap = 10_000e18;
+  uint256 defaultDepositCap = 10_000_000e18;
 
-  Account signer;
+  Account operator;
 
   function setUp() public override virtual {
     super.setUp();
@@ -35,17 +30,21 @@ contract DepositTest is BaseTest {
       address(governor),
       address(usdcToken)
     );
-    signer = makeAccount("signer");
-    vm.label(signer.addr, "signer");
+    operator = makeAccount("operator");
+    vm.label(operator.addr, "operator");
     deposit = new Deposit(
       address(governor),
       address(ethStrategy),
-      signer.addr,
+      operator.addr,
       defaultConversionRate,
       defaultConversionPremium,
       defaultDepositCap,
       true
     );
+    vm.startPrank(address(operator.addr));
+    deposit.addWhitelist(_getWhitelistedAddresses());
+    vm.stopPrank();
+
     vm.startPrank(address(governor));
     ethStrategy.grantRoles(address(dutchAuction), ethStrategy.MINTER_ROLE());
     ethStrategy.grantRoles(address(deposit), ethStrategy.MINTER_ROLE());
@@ -55,59 +54,57 @@ contract DepositTest is BaseTest {
   }
 
   function test_deposit_success() public {
-    uint256 depositAmount = 1e18;
-    bytes memory signature = getSignature(alice);
+    uint256 depositAmount = 1000e18;
     vm.deal(alice, depositAmount);
     vm.startPrank(alice);
     vm.expectEmit();
     emit ERC20.Transfer(address(0), alice, depositAmount * deposit.CONVERSION_RATE());
-    deposit.deposit{value: depositAmount}(signature);
+    deposit.deposit{value: depositAmount}();
     vm.stopPrank();
 
     uint256 conversionRate = deposit.CONVERSION_RATE();
     assertEq(ethStrategy.balanceOf(alice),  conversionRate * depositAmount, "balance of alice incorrect");
-    assertEq(deposit.depositCap(), defaultDepositCap - depositAmount, "deposit cap incorrect");
+    assertEq(deposit.getDepositCap(), defaultDepositCap - depositAmount, "deposit cap incorrect");
     assertEq(deposit.hasRedeemed(alice), true, "alice hasn't redeemed");
     assertEq(address(governor).balance, depositAmount, "governor balance incorrect");
   }
 
-function test_deposit_2success_whiteListDisabled() public {
-    deposit = new Deposit(
+function test_deposit_success_whiteListDisabled() public {
+    Deposit _deposit = new Deposit(
       address(governor),
       address(ethStrategy),
-      signer.addr,
+      operator.addr,
       defaultConversionRate,
       defaultConversionPremium,
       defaultDepositCap,
       false
     );
     vm.startPrank(address(governor));
-    ethStrategy.grantRoles(address(deposit), ethStrategy.MINTER_ROLE());
+    ethStrategy.grantRoles(address(_deposit), ethStrategy.MINTER_ROLE());
     vm.stopPrank();
-    uint256 depositAmount = 1e18;
+    uint256 depositAmount = 1000e18;
     vm.deal(alice, depositAmount);
     vm.startPrank(alice);
     vm.expectEmit();
-    emit ERC20.Transfer(address(0), alice, depositAmount * deposit.CONVERSION_RATE());
-    deposit.deposit{value: depositAmount}(new bytes(0));
+    emit ERC20.Transfer(address(0), alice, depositAmount * _deposit.CONVERSION_RATE());
+    _deposit.deposit{value: depositAmount}();
     vm.stopPrank();
 
-    uint256 conversionRate = deposit.CONVERSION_RATE();
+    uint256 conversionRate = _deposit.CONVERSION_RATE();
     assertEq(ethStrategy.balanceOf(alice),  conversionRate * depositAmount, "balance of alice incorrect");
-    assertEq(deposit.depositCap(), defaultDepositCap - depositAmount, "deposit cap incorrect");
+    assertEq(_deposit.getDepositCap(), defaultDepositCap - depositAmount, "deposit cap incorrect");
     assertEq(address(governor).balance, depositAmount, "governor balance incorrect");
   }
 
   function test_deposit_DepositCapExceeded() public {
     uint256 depositAmount = defaultDepositCap + 1;
-    bytes memory signature = getSignature(alice);
     vm.deal(alice, depositAmount);
     vm.startPrank(alice);
     vm.expectRevert(Deposit.DepositCapExceeded.selector);
-    deposit.deposit{value: depositAmount}(signature);
+    deposit.deposit{value: depositAmount}();
     vm.stopPrank();
 
-    assertEq(deposit.depositCap(), defaultDepositCap, "deposit cap incorrect");
+    assertEq(deposit.getDepositCap(), defaultDepositCap, "deposit cap incorrect");
     assertEq(deposit.hasRedeemed(alice), false, "alice has redeemed");
     assertEq(address(governor).balance, 0, "governor balance incorrect");
     assertEq(ethStrategy.balanceOf(alice), 0, "alice balance incorrect");
@@ -115,19 +112,18 @@ function test_deposit_2success_whiteListDisabled() public {
   }
 
   function test_deposit_AlreadyRedeemed() public {
-    uint256 depositAmount = 1e18;
-    bytes memory signature = getSignature(alice);
+    uint256 depositAmount = 1000e18;
     vm.deal(alice, depositAmount * 2);
     vm.startPrank(alice);
-    deposit.deposit{value: depositAmount}(signature);
+    deposit.deposit{value: depositAmount}();
     vm.stopPrank();
 
     vm.startPrank(alice);
     vm.expectRevert(Deposit.AlreadyRedeemed.selector);
-    deposit.deposit{value: depositAmount}(signature);
+    deposit.deposit{value: depositAmount}();
     vm.stopPrank();
 
-    assertEq(deposit.depositCap(), defaultDepositCap - depositAmount, "deposit cap incorrect");
+    assertEq(deposit.getDepositCap(), defaultDepositCap - depositAmount, "deposit cap incorrect");
     assertEq(deposit.hasRedeemed(alice), true, "alice has redeemed");
     assertEq(address(governor).balance, depositAmount, "governor balance incorrect");
     assertEq(ethStrategy.balanceOf(alice), depositAmount * deposit.CONVERSION_RATE(), "alice balance incorrect");
@@ -135,30 +131,14 @@ function test_deposit_2success_whiteListDisabled() public {
   }
 
   function test_deposit_DepositAmountTooLow() public {
-    uint256 depositAmount = 1e18 - 1;
-    bytes memory signature = getSignature(alice);
+    uint256 depositAmount = deposit.MIN_DEPOSIT() - 1;
     vm.deal(alice, depositAmount);
     vm.startPrank(alice);
     vm.expectRevert(Deposit.DepositAmountTooLow.selector);
-    deposit.deposit{value: depositAmount}(signature);
+    deposit.deposit{value: depositAmount}();
     vm.stopPrank();
 
-    assertEq(deposit.depositCap(), defaultDepositCap, "deposit cap incorrect");
-    assertEq(deposit.hasRedeemed(alice), false, "alice has redeemed");
-    assertEq(address(governor).balance, 0, "governor balance incorrect");
-    assertEq(ethStrategy.balanceOf(alice), 0, "alice balance incorrect");
-    assertEq(address(deposit).balance, 0, "deposit balance incorrect");
-  }
-
-  function test_deposit_InvalidSignature() public {
-    uint256 depositAmount = 1e18;
-    vm.deal(alice, depositAmount);
-    vm.startPrank(alice);
-    vm.expectRevert(Deposit.InvalidSignature.selector);
-    deposit.deposit{value: depositAmount}(new bytes(0));
-    vm.stopPrank();
-
-    assertEq(deposit.depositCap(), defaultDepositCap, "deposit cap incorrect");
+    assertEq(deposit.getDepositCap(), defaultDepositCap, "deposit cap incorrect");
     assertEq(deposit.hasRedeemed(alice), false, "alice has redeemed");
     assertEq(address(governor).balance, 0, "governor balance incorrect");
     assertEq(ethStrategy.balanceOf(alice), 0, "alice balance incorrect");
@@ -166,15 +146,14 @@ function test_deposit_2success_whiteListDisabled() public {
   }
 
   function test_deposit_DepositAmountTooHigh() public {
-    uint256 depositAmount = 100e18 + 1;
-    bytes memory signature = getSignature(alice);
+    uint256 depositAmount = deposit.MAX_DEPOSIT() + 1;
     vm.deal(alice, depositAmount);
     vm.startPrank(alice);
     vm.expectRevert(Deposit.DepositAmountTooHigh.selector);
-    deposit.deposit{value: depositAmount}(signature);
+    deposit.deposit{value: depositAmount}();
     vm.stopPrank();
 
-    assertEq(deposit.depositCap(), defaultDepositCap, "deposit cap incorrect");
+    assertEq(deposit.getDepositCap(), defaultDepositCap, "deposit cap incorrect");
     assertEq(deposit.hasRedeemed(alice), false, "alice has redeemed");
     assertEq(address(governor).balance, 0, "governor balance incorrect");
     assertEq(ethStrategy.balanceOf(alice), 0, "alice balance incorrect");
@@ -182,8 +161,7 @@ function test_deposit_2success_whiteListDisabled() public {
   }
 
   function test_deposit_DepositFailed() public {
-    uint256 depositAmount = 1e18;
-    bytes memory signature = getSignature(alice);
+    uint256 depositAmount = 1000e18;
     OwnerDepositRejector ownerDepositRejector = new OwnerDepositRejector();
     vm.startPrank(address(governor));
     deposit.transferOwnership(address(ownerDepositRejector));
@@ -191,11 +169,11 @@ function test_deposit_2success_whiteListDisabled() public {
     vm.deal(alice, depositAmount);
     vm.startPrank(alice);
     vm.expectRevert(Deposit.DepositFailed.selector);
-    deposit.deposit{value: depositAmount}(signature);
+    deposit.deposit{value: depositAmount}();
     vm.stopPrank();
 
 
-    assertEq(deposit.depositCap(), defaultDepositCap, "deposit cap incorrect");
+    assertEq(deposit.getDepositCap(), defaultDepositCap, "deposit cap incorrect");
     assertEq(deposit.hasRedeemed(alice), false, "alice has redeemed");
     assertEq(address(governor).balance, 0, "governor balance incorrect");
     assertEq(ethStrategy.balanceOf(alice), 0, "alice balance incorrect");
@@ -206,22 +184,21 @@ function test_deposit_2success_whiteListDisabled() public {
     ReentrantDeposit reentrantDeposit = new ReentrantDeposit(deposit);
     vm.prank(address(governor));
     deposit.transferOwnership(address(reentrantDeposit));
-    uint256 depositAmount = 1e18;
-    bytes memory signature = getSignature(alice);
+    uint256 depositAmount = 1000e18;
     vm.deal(alice, depositAmount);
     vm.startPrank(alice);
     vm.expectRevert(Deposit.DepositFailed.selector);
-    deposit.deposit{value: depositAmount}(signature);
+    deposit.deposit{value: depositAmount}();
     vm.stopPrank();
   }
 
   function test_deposit_InvalidConversionPremium() public {
     uint256 conversionPremium = 100_01;
     vm.expectRevert(Deposit.InvalidConversionPremium.selector);
-    deposit = new Deposit(
+    new Deposit(
       address(governor),
       address(ethStrategy),
-      signer.addr,
+      operator.addr,
       defaultConversionRate,
       conversionPremium,
       defaultDepositCap,
@@ -229,17 +206,17 @@ function test_deposit_2success_whiteListDisabled() public {
     );
   }
 
-  function test_setSigner_success() public {
-    vm.startPrank(address(governor));
-    deposit.setSigner(bob);
+  function test_setOperator_success() public {
+    vm.startPrank(address(operator.addr));
+    deposit.setOperator(bob);
     vm.stopPrank();
-    assertEq(deposit.signer(), bob, "signer incorrect");
+    assertEq(deposit.operator(), bob, "operator incorrect");
   }
 
-  function test_setSigner_Unauthorized() public {
-    vm.expectRevert(Ownable.Unauthorized.selector);
-    deposit.setSigner(bob);
-    assertEq(deposit.signer(), signer.addr, "signer incorrect");
+  function test_setOperator_Unauthorized() public {
+    vm.expectRevert("Caller is not an operator");
+    deposit.setOperator(bob);
+    assertEq(deposit.operator(), operator.addr, "operator incorrect");
   }
 
   function test_receive_InvalidCall() public {
@@ -248,48 +225,268 @@ function test_deposit_2success_whiteListDisabled() public {
     vm.expectRevert(Deposit.InvalidCall.selector);
     payable(address(deposit)).call{value: 1e18}("");
   }
-
-  function getSignature(address _to) public view returns (bytes memory) {
-    bytes32 hash = keccak256(abi.encodePacked(_to));
-    (uint8 v, bytes32 r, bytes32 s) = vm.sign(signer.key, hash);
-    return abi.encodePacked(r, s, v);
-  }
   
   function testFuzz_deposit(uint256 depositAmount, uint256 depositCap, uint256 conversionRate, uint256 conversionPremium) public {
-    depositAmount = bound(depositAmount, 1e18, 100e18);
-    depositCap = bound(depositCap, 1e18, 10_000e18);
+    depositAmount = bound(depositAmount, 1000e18, 5_000_000e18);
+    depositCap = bound(depositCap, 1000e18, 5_000_000e18);
     conversionPremium = bound(conversionPremium, 0, 100_00);
     conversionRate = bound(conversionRate, 1, defaultConversionRate);
     vm.assume(depositAmount <= depositCap);
 
     uint256 DENOMINATOR_BP = deposit.DENOMINATOR_BP();
-    deposit = new Deposit(
+    Deposit _deposit = new Deposit(
       address(governor),
       address(ethStrategy),
-      signer.addr,
+      operator.addr,
       conversionRate,
       conversionPremium,
       depositCap,
       true
     );
-
-    vm.startPrank(address(governor));
-    ethStrategy.grantRoles(address(deposit), ethStrategy.MINTER_ROLE());
+    vm.startPrank(address(operator.addr));
+    _deposit.addWhitelist(_getWhitelistedAddresses());
     vm.stopPrank();
 
-    bytes memory signature = getSignature(alice);
+    vm.startPrank(address(governor));
+    ethStrategy.grantRoles(address(_deposit), ethStrategy.MINTER_ROLE());
+    vm.stopPrank();
+
     vm.deal(alice, depositAmount);
     vm.startPrank(alice);
     vm.expectEmit();
-    emit ERC20.Transfer(address(0), alice, (depositAmount * deposit.CONVERSION_RATE() * (DENOMINATOR_BP - conversionPremium)) / DENOMINATOR_BP);
-    deposit.deposit{value: depositAmount}(signature);
+    emit ERC20.Transfer(address(0), alice, (depositAmount * _deposit.CONVERSION_RATE() * (DENOMINATOR_BP - conversionPremium)) / DENOMINATOR_BP);
+    _deposit.deposit{value: depositAmount}();
     vm.stopPrank();
 
-    assertEq(deposit.depositCap(), depositCap - depositAmount, "deposit cap incorrect");
-    assertEq(deposit.hasRedeemed(alice), true, "alice has redeemed");
+    assertEq(_deposit.getDepositCap(), depositCap - depositAmount, "deposit cap incorrect");
+    assertEq(_deposit.hasRedeemed(alice), true, "alice has redeemed");
     assertEq(address(governor).balance, depositAmount, "governor balance incorrect");
-    assertEq(ethStrategy.balanceOf(alice), (depositAmount * deposit.CONVERSION_RATE() * (DENOMINATOR_BP - conversionPremium)) / DENOMINATOR_BP, "alice balance incorrect");
-    assertEq(address(deposit).balance, 0, "deposit balance incorrect");
+    assertEq(ethStrategy.balanceOf(alice), (depositAmount * _deposit.CONVERSION_RATE() * (DENOMINATOR_BP - conversionPremium)) / DENOMINATOR_BP, "alice balance incorrect");
+    assertEq(address(_deposit).balance, 0, "deposit balance incorrect");
+  }
+
+  function test_addWhitelist_success() public {
+    address[] memory accounts = new address[](2);
+    accounts[0] = address(0x11);
+    accounts[1] = address(0x22);
+    
+    vm.startPrank(operator.addr);
+    vm.expectEmit(true, false, false, true);
+    emit AllowableAccounts.WhitelistedAdded(accounts);
+    deposit.addWhitelist(accounts);
+    vm.stopPrank();
+
+    assertTrue(deposit.isWhitelisted(address(0x11)), "First account not whitelisted");
+    assertTrue(deposit.isWhitelisted(address(0x22)), "Second account not whitelisted");
+  }
+
+  function test_addWhitelist_unauthorized() public {
+    address[] memory accounts = new address[](1);
+    accounts[0] = address(0x11);
+    
+    vm.expectRevert("Caller is not an operator");
+    deposit.addWhitelist(accounts);
+    
+    assertFalse(deposit.isWhitelisted(address(0x11)), "Account should not be whitelisted");
+  }
+
+  function test_addWhitelist_emptyArray() public {
+    address[] memory accounts = new address[](0);
+    
+    vm.startPrank(operator.addr);
+    vm.expectRevert(AllowableAccounts.NoAccountsToAdd.selector);
+    deposit.addWhitelist(accounts);
+    vm.stopPrank();
+  }
+
+  function test_addWhitelist_zeroAddress() public {
+    address[] memory accounts = new address[](1);
+    accounts[0] = address(0);
+    
+    vm.startPrank(operator.addr);
+    vm.expectRevert(abi.encodeWithSelector(AllowableAccounts.InvalidAccount.selector, accounts[0]));
+    deposit.addWhitelist(accounts);
+    vm.stopPrank();
+  }
+
+  function test_addWhitelist_duplicateAddress() public {
+    // First add an address
+    address[] memory accounts1 = new address[](1);
+    accounts1[0] = address(0x11);
+    
+    vm.startPrank(operator.addr);
+    deposit.addWhitelist(accounts1);
+    
+    // Try to add the same address again
+    vm.expectRevert(abi.encodeWithSelector(AllowableAccounts.AccountAlreadyAdded.selector, accounts1[0]));
+    deposit.addWhitelist(accounts1);
+    vm.stopPrank();
+  }
+
+  function test_addWhitelist_multipleAccounts() public {
+    address[] memory accounts = new address[](3);
+    accounts[0] = address(0x11);
+    accounts[1] = address(0x22);
+    accounts[2] = address(0x33);
+    
+    vm.startPrank(operator.addr);
+    deposit.addWhitelist(accounts);
+    vm.stopPrank();
+
+    address[] memory whitelist = deposit.getWhitelist();
+    assertEq(whitelist.length, 6, "Whitelist length incorrect"); // 3 accounts + 3 whitelisted addresses from setUp
+    assertTrue(deposit.isWhitelisted(address(0x11)), "First account not whitelisted");
+    assertTrue(deposit.isWhitelisted(address(0x22)), "Second account not whitelisted");
+    assertTrue(deposit.isWhitelisted(address(0x33)), "Third account not whitelisted");
+  }
+
+  function test_removeWhitelist_success() public {
+    address[] memory accounts = new address[](2);
+    accounts[0] = address(0x11);
+    accounts[1] = address(0x22);
+    
+    vm.startPrank(operator.addr);
+    deposit.addWhitelist(accounts);
+    
+    vm.expectEmit(true, false, false, true);
+    emit AllowableAccounts.WhitelistedRemoved(accounts);
+    deposit.removeWhitelist(accounts);
+    vm.stopPrank();
+
+    assertFalse(deposit.isWhitelisted(address(0x11)), "First account still whitelisted");
+    assertFalse(deposit.isWhitelisted(address(0x22)), "Second account still whitelisted");
+  }
+
+  function test_removeWhitelist_unauthorized() public {
+    address[] memory accounts = new address[](1);
+    accounts[0] = address(0x11);
+    
+    vm.expectRevert("Caller is not an operator");
+    deposit.removeWhitelist(accounts);
+  }
+
+  function test_removeWhitelist_emptyArray() public {
+    address[] memory accounts = new address[](0);
+    
+    vm.startPrank(operator.addr);
+    vm.expectRevert(AllowableAccounts.NoAccountsToRemove.selector);
+    deposit.removeWhitelist(accounts);
+    vm.stopPrank();
+  }
+
+  function test_removeWhitelist_accountNotFound() public {
+    address[] memory accounts = new address[](1);
+    accounts[0] = address(0x11);
+    
+    vm.startPrank(operator.addr);
+    vm.expectRevert(abi.encodeWithSelector(AllowableAccounts.AccountNotFound.selector, accounts[0]));
+    deposit.removeWhitelist(accounts);
+    vm.stopPrank();
+  }
+
+  function test_deposit_notWhitelisted() public {
+    uint256 depositAmount = 1000e18;
+    address nonWhitelisted = address(0x9999);
+    vm.deal(nonWhitelisted, depositAmount);
+    
+    vm.startPrank(nonWhitelisted);
+    vm.expectRevert(Deposit.NotWhitelisted.selector);
+    deposit.deposit{value: depositAmount}();
+    vm.stopPrank();
+  }
+
+  function test_getWhitelist() public {
+    // Add some addresses to whitelist
+    address[] memory accounts = new address[](2);
+    accounts[0] = address(0x11);
+    accounts[1] = address(0x22);
+    
+    vm.startPrank(operator.addr);
+    deposit.addWhitelist(accounts);
+    vm.stopPrank();
+
+    // Get whitelist and verify
+    address[] memory whitelist = deposit.getWhitelist();
+    assertEq(whitelist.length, 5, "Whitelist length incorrect"); // 2 new accounts + 3 from setUp
+    
+    bool found1 = false;
+    bool found2 = false;
+    for(uint i = 0; i < whitelist.length; i++) {
+        if(whitelist[i] == address(0x11)) found1 = true;
+        if(whitelist[i] == address(0x22)) found2 = true;
+    }
+    assertTrue(found1, "First account not in whitelist");
+    assertTrue(found2, "Second account not in whitelist");
+  }
+
+  function test_removeWhitelist_multipleAccounts() public {
+    // First add some addresses
+    address[] memory accounts = new address[](3);
+    accounts[0] = address(0x11);
+    accounts[1] = address(0x22);
+    accounts[2] = address(0x33);
+    
+    vm.startPrank(operator.addr);
+    deposit.addWhitelist(accounts);
+    
+    // Remove them
+    deposit.removeWhitelist(accounts);
+    vm.stopPrank();
+
+    address[] memory whitelist = deposit.getWhitelist();
+    assertEq(whitelist.length, 3, "Whitelist length incorrect"); // Only the 3 from setUp remain
+    assertFalse(deposit.isWhitelisted(address(0x11)), "First account still whitelisted");
+    assertFalse(deposit.isWhitelisted(address(0x22)), "Second account still whitelisted");
+    assertFalse(deposit.isWhitelisted(address(0x33)), "Third account still whitelisted");
+  }
+
+  function test_setWhiteListEnabled_success() public {
+    vm.startPrank(operator.addr);
+    
+    // Test disabling whitelist
+    vm.expectEmit(true, false, false, true);
+    emit Deposit.WhiteListEnabledSet(false);
+    deposit.setWhiteListEnabled(false);
+    assertFalse(deposit.whiteListEnabled(), "Whitelist should be disabled");
+    
+    // Test enabling whitelist
+    vm.expectEmit(true, false, false, true);
+    emit Deposit.WhiteListEnabledSet(true);
+    deposit.setWhiteListEnabled(true);
+    assertTrue(deposit.whiteListEnabled(), "Whitelist should be enabled");
+    vm.stopPrank();
+  }
+
+  function test_setWhiteListEnabled_unauthorized() public {
+    vm.expectRevert("Caller is not an operator");
+    deposit.setWhiteListEnabled(false);
+    
+    assertTrue(deposit.whiteListEnabled(), "Whitelist state should not change");
+  }
+
+  function test_deposit_whitelistToggle() public {
+    uint256 depositAmount = 1000e18;
+    address nonWhitelisted = address(0x9999);
+    vm.deal(nonWhitelisted, depositAmount);
+    
+    // First verify deposit fails when whitelist is enabled
+    vm.startPrank(nonWhitelisted);
+    vm.expectRevert(Deposit.NotWhitelisted.selector);
+    deposit.deposit{value: depositAmount}();
+    vm.stopPrank();
+    
+    // Disable whitelist
+    vm.startPrank(operator.addr);
+    deposit.setWhiteListEnabled(false);
+    vm.stopPrank();
+    
+    // Now deposit should succeed
+    vm.startPrank(nonWhitelisted);
+    deposit.deposit{value: depositAmount}();
+    vm.stopPrank();
+    
+    uint256 conversionRate = deposit.CONVERSION_RATE();
+    assertEq(ethStrategy.balanceOf(nonWhitelisted), conversionRate * depositAmount, "Balance incorrect after deposit");
   }
 }
 
@@ -307,6 +504,6 @@ contract ReentrantDeposit {
     deposit = _deposit;
   }
   fallback() external payable {
-    deposit.deposit{value: msg.value}(new bytes(0));
+    deposit.deposit{value: msg.value}();
   }
 }

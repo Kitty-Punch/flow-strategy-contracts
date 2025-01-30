@@ -52,6 +52,14 @@ contract BaseTest is Test {
     vm.label(charlie, "charlie");
   }
 
+  function _getWhitelistedAddresses() internal view returns (address[] memory) {
+    address[] memory addresses = new address[](3);
+    addresses[0] = alice;
+    addresses[1] = bob;
+    addresses[2] = charlie;
+    return addresses;
+  }
+
   function mintAndApprove(address _to, uint256 _amount, address spender, address _token) public {
     IERC20(_token).mint(_to, _amount);
     vm.prank(_to);

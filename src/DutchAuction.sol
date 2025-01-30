@@ -41,6 +41,9 @@ contract DutchAuction is OwnableRoles, ReentrancyGuard {
         address _governor,
         address _paymentToken
     ) {
+        require(_ethStrategy != address(0), "Strategy is invalid");
+        require(_governor != address(0), "Governor is invalid");
+        require(_paymentToken != address(0), "Payment token is invalid");
         ethStrategy = _ethStrategy;
         paymentToken = _paymentToken;
         _initializeOwner(_governor);
