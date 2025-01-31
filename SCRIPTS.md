@@ -17,3 +17,16 @@ forge script script/Deploy.s.sol:DeployScript --rpc-url <rpc-url> -vvvv --slow -
 ### Call Deposit.deposit()
 
 forge script script/DepositDeposit.s.sol:DepositDepositScript --rpc-url <rpc-url> -vvvv --slow --legacy --broadcast
+
+### Start AtmAuction
+
+forge script script/AuctionStartAuction.s.sol:AuctionStartAuctionScript --rpc-url <rpc-url> -vvvv --slow --legacy --broadcast
+
+### Propose AtmAuction.startAuction()
+
+forge script script/GovernorPropose.s.sol:GovernorProposeScript --rpc-url <rpc-url> -vvvv --slow --legacy --broadcast
+
+### Cast Vote
+
+forge script script/GovernorCastVote.s.sol:GovernorCastVoteScript --rpc-url <rpc-url> -vvvv --slow --legacy --broadcast
+

@@ -23,7 +23,7 @@ contract Deposit is Ownable, ReentrancyGuard, AllowableAccounts {
   error NotWhitelisted();
 
   event WhiteListEnabledSet(bool whiteListEnabled);
-  event Deposit(address indexed user, uint256 indexed value, uint256 indexed amount, uint256 conversionRate);
+  event Deposited(address indexed user, uint256 indexed value, uint256 indexed amount, uint256 conversionRate);
   event OperatorSet(address indexed operator);
 
   address public immutable ethStrategy;
@@ -85,7 +85,7 @@ contract Deposit is Ownable, ReentrancyGuard, AllowableAccounts {
     if (!success) revert DepositFailed();
 
     IFlowStrategy(ethStrategy).mint(msg.sender, amount);
-    emit Deposit(msg.sender, msg.value, amount, CONVERSION_RATE);
+    emit Deposited(msg.sender, msg.value, amount, CONVERSION_RATE);
     return amount;
   }
 
