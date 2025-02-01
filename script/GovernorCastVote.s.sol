@@ -9,7 +9,7 @@ contract GovernorCastVoteScript is ScriptBase {
         string memory environment = "testnet"; // testnet or mainnet
         DeployedConfig memory config = _parseDeployedConfig(environment);
         FlowStrategyGovernor flowStrategyGovernor = FlowStrategyGovernor(payable(config.FlowStrategyGovernor));
-        uint256 proposalId = 87329991636665055878886487169115020485395279143719973045932130188571417227985;
+        uint256 proposalId = 78127799258211928141813997596152054380313671363561188190884831951231599727507;
         uint8 vote = 1;
 
         uint256 privateKey = vm.envUint("PRIVATE_KEY");
@@ -26,8 +26,8 @@ contract GovernorCastVoteScript is ScriptBase {
 
         vm.stopBroadcast();
 
-        console2.log("Proposal ID: ", proposalId);
-        console2.log("Proposal State: ", uint256(flowStrategyGovernor.state(proposalId)));
-        console2.log("Proposal Has Voted: ", flowStrategyGovernor.hasVoted(proposalId, executor));
+        console2.log("Proposal ID:          ", proposalId);
+        console2.log("Proposal State:       ", uint256(flowStrategyGovernor.state(proposalId)));
+        console2.log("Proposal Has Voted:   ", flowStrategyGovernor.hasVoted(proposalId, executor));
     }
 }

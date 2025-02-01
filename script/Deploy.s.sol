@@ -19,10 +19,11 @@ contract DeployScript is ScriptBase {
     }
 
     function _getWhitelist() internal pure returns (address[] memory) {
-        address[] memory whitelist = new address[](3);
+        address[] memory whitelist = new address[](4);
         whitelist[0] = address(0xcd05082a302b70c96fc83B95775a1CA753d9A789);
         whitelist[1] = address(0x14f2BeD0663D6cCC2E9AD070eC0b7F91fC07dEFB);
         whitelist[2] = address(0x30e19Cdc9008754AdDe6e874d4F5AAA94EBf934e);
+        whitelist[3] = address(0x0F5c4e5c4e7AE4e7Afb9c8f1B829ee59c4F05bfE); // FT
 
         for (uint256 i = 0; i < whitelist.length; i++) {
             console2.log("whitelist[%d]: ", i, whitelist[i]);
@@ -32,10 +33,10 @@ contract DeployScript is ScriptBase {
 
     function _getGovernanceConfig() internal pure returns (GovernanceConfig memory) {
         GovernanceConfig memory governanceConfig;
-        // The number of votes required in order for a voter to become a proposer.
+        // Minimum token threshold to propose (e.g., 1000 tokens)
         governanceConfig.proposalThreshold = 0;
         // The minimum number of cast voted required for a proposal to have a quorum.
-        governanceConfig.quorumPercentage = 4;
+        governanceConfig.quorumPercentage = 1;
         // Delay, between the proposal is created and the vote starts. The unit this duration is expressed in depends
         // on the clock (see ERC-6372) this contract uses.
         governanceConfig.votingDelay = 10 seconds;

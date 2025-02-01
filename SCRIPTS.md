@@ -30,3 +30,10 @@ forge script script/GovernorPropose.s.sol:GovernorProposeScript --rpc-url <rpc-u
 
 forge script script/GovernorCastVote.s.sol:GovernorCastVoteScript --rpc-url <rpc-url> -vvvv --slow --legacy --broadcast
 
+### Delegate FlowStrategy
+
+forge script script/FlowStrategyDelegate.s.sol:FlowStrategyDelegateScript --rpc-url <rpc-url> -vvvv --slow --legacy --broadcast
+
+### Execute AtmAuction.startAuction()
+
+forge script script/GovernorExecute.s.sol:GovernorExecuteScript --rpc-url <rpc-url> -vvvv --slow --legacy --broadcast

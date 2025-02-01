@@ -20,7 +20,7 @@ contract FlowStrategy is ERC20Votes, OwnableRoles, IFlowStrategy {
     }
 
     function symbol() public view virtual override(ERC20, IFlowStrategy) returns (string memory) {
-        return "FLOWSR";
+        return "FLOWSTR";
     }
 
     function mint(address _to, uint256 _amount) public onlyOwnerOrRoles(MINTER_ROLE) {

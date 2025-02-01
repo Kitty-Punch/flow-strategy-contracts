@@ -6,13 +6,13 @@ import {AtmAuction} from "../src/AtmAuction.sol";
 import {ScriptBase} from "./ScriptBase.s.sol";
 import {FlowStrategyGovernor} from "../src/FlowStrategyGovernor.sol";
 
-contract GovernorProposeScript is ScriptBase {
+contract GovernorExecuteScript is ScriptBase {
     function run() public {
         string memory environment = "testnet"; // testnet or mainnet
         DeployedConfig memory config = _parseDeployedConfig(environment);
         FlowStrategyGovernor flowStrategyGovernor = FlowStrategyGovernor(payable(config.FlowStrategyGovernor));
         AtmAuction atmAuction = AtmAuction(payable(config.AtmAuction));
-        uint64 _startTime = uint64(block.timestamp + 2 minutes);
+        uint64 _startTime = 1738381763;
         uint64 _duration = 1 hours;
         uint128 _startPrice = 1e18;
         uint128 _endPrice = 1e15;
@@ -26,27 +26,21 @@ contract GovernorProposeScript is ScriptBase {
         calldatas[0] = abi.encodeWithSelector(
             DutchAuction.startAuction.selector, _startTime, _duration, _startPrice, _endPrice, _amount
         );
-
         string memory description = "Initial ATM auction.";
+        bytes32 descriptionHash = keccak256(abi.encodePacked(description));
 
         uint256 proposalId =
-            flowStrategyGovernor.hashProposal(targets, values, calldatas, keccak256(bytes(description)));
+            flowStrategyGovernor.hashProposal(targets, values, calldatas, descriptionHash);
 
-        uint256 privateKey = vm.envUint("PRIVATE_KEY");
-        address executor = vm.addr(privateKey);
+        console2.log("Block timestamp:      ", block.timestamp);
+        console2.log("Block number:         ", block.number);
+        console2.log("Proposal ID:          ", proposalId);
+        console2.log("Proposal State:       ", uint256(flowStrategyGovernor.state(proposalId)));
+        console2.log("Proposal Deadline:    ", flowStrategyGovernor.proposalDeadline(proposalId));
 
-        console2.log("Duration:         ", _duration);
-        console2.log("Start time:       ", _startTime);
-        console2.log("Start price:      ", _startPrice);
-        console2.log("End price:        ", _endPrice);
-        console2.log("Amount:           ", _amount);
-        console2.log("Executor:         ", executor);
-        console2.log("Executor balance: ", executor.balance);
-        console2.log("Proposal ID:      ", proposalId);
+        vm.startBroadcast(vm.envUint("PRIVATE_KEY"));
 
-        vm.startBroadcast(privateKey);
-
-        flowStrategyGovernor.propose(targets, values, calldatas, description);
+        flowStrategyGovernor.execute(targets, values, calldatas, descriptionHash);
 
         vm.stopBroadcast();
 
@@ -62,7 +56,7 @@ contract GovernorProposeScript is ScriptBase {
                 Executed
             }
         */
-        console2.log("Proposal State:           ", uint256(flowStrategyGovernor.state(proposalId)));
-        console2.log("Proposal Needs Queuing:   ", flowStrategyGovernor.proposalNeedsQueuing(proposalId));
+        console2.log("Proposal State:       ", uint256(flowStrategyGovernor.state(proposalId)));
+        
     }
 }
