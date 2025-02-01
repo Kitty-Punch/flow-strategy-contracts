@@ -12,11 +12,13 @@ contract GovernorExecuteScript is ScriptBase {
         DeployedConfig memory config = _parseDeployedConfig(environment);
         FlowStrategyGovernor flowStrategyGovernor = FlowStrategyGovernor(payable(config.FlowStrategyGovernor));
         AtmAuction atmAuction = AtmAuction(payable(config.AtmAuction));
-        uint64 _startTime = 1738381763;
+        uint64 _startTime = 1738386373;
         uint64 _duration = 1 hours;
-        uint128 _startPrice = 1e18;
-        uint128 _endPrice = 1e15;
+        uint128 _startPrice = 10_000e6;
+        uint128 _endPrice = 3_000e6;
         uint128 _amount = 5000e18;
+
+        require(_startPrice <= (type(uint128).max / _amount), "Start price overflow");
 
         address[] memory targets = new address[](1);
         targets[0] = address(atmAuction);

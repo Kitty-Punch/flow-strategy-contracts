@@ -43,7 +43,7 @@ contract DeployScript is ScriptBase {
         // Delay between the vote start and vote end. The unit this duration is expressed in depends on the clock (see ERC-6372) this contract uses.
         // NOTE: The {votingDelay} can delay the start of the vote. This must be considered when setting the voting
         // duration compared to the voting delay.
-        governanceConfig.votingPeriod = 1 hours;
+        governanceConfig.votingPeriod = 10 minutes;
         governanceConfig.whitelist = _getWhitelist();
         return governanceConfig;
     }
