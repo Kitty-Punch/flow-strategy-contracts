@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.25;
+
 import {ERC20} from "solady/src/tokens/ERC20.sol";
 import {OwnableRoles} from "solady/src/auth/OwnableRoles.sol";
 import {SafeTransferLib} from "solady/src/utils/SafeTransferLib.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 contract DutchAuction is OwnableRoles, ReentrancyGuard {
     error InvalidStartTime();
@@ -14,6 +16,7 @@ contract DutchAuction is OwnableRoles, ReentrancyGuard {
     error InvalidDuration();
     error AmountStartPriceOverflow();
     error FillAmountZero();
+
     struct Auction {
         uint64 startTime;
         uint64 duration;
@@ -26,8 +29,9 @@ contract DutchAuction is OwnableRoles, ReentrancyGuard {
 
     address public immutable ethStrategy;
     address public immutable paymentToken;
-    uint8 constant decimals = 18;
-    uint64 public constant MAX_START_TIME_WINDOW = 7 days; 
+
+    uint8 public constant PRICE_DECIMALS = 6;
+    uint64 public constant MAX_START_TIME_WINDOW = 7 days;
     uint64 public constant MAX_DURATION = 30 days;
 
     event AuctionStarted(Auction auction);
@@ -36,11 +40,8 @@ contract DutchAuction is OwnableRoles, ReentrancyGuard {
     event AuctionCancelled();
 
     uint8 public constant ADMIN_ROLE = 1;
-    constructor(
-        address _ethStrategy,
-        address _governor,
-        address _paymentToken
-    ) {
+
+    constructor(address _ethStrategy, address _governor, address _paymentToken) {
         require(_ethStrategy != address(0), "Strategy is invalid");
         require(_governor != address(0), "Governor is invalid");
         require(_paymentToken != address(0), "Payment token is invalid");
@@ -49,25 +50,22 @@ contract DutchAuction is OwnableRoles, ReentrancyGuard {
         _initializeOwner(_governor);
     }
 
-    function startAuction(
-        uint64 _startTime,
-        uint64 _duration,
-        uint128 _startPrice,
-        uint128 _endPrice,
-        uint128 _amount
-    ) public onlyOwnerOrRoles(ADMIN_ROLE) {
+    function startAuction(uint64 _startTime, uint64 _duration, uint128 _startPrice, uint128 _endPrice, uint128 _amount)
+        public
+        onlyOwnerOrRoles(ADMIN_ROLE)
+    {
         uint64 currentTime = uint64(block.timestamp);
-        if(_startTime == 0) {
-          _startTime = currentTime;
+        if (_startTime == 0) {
+            _startTime = currentTime;
         }
-        if(_startTime < currentTime || _startTime > currentTime + MAX_START_TIME_WINDOW) {
-          revert InvalidStartTime();
+        if (_startTime < currentTime || _startTime > currentTime + MAX_START_TIME_WINDOW) {
+            revert InvalidStartTime();
         }
-        if(_duration == 0 || _duration > MAX_DURATION) {
-          revert InvalidDuration();
+        if (_duration == 0 || _duration > MAX_DURATION) {
+            revert InvalidDuration();
         }
-        if(_startPrice > (type(uint128).max / _amount)) {
-          revert AmountStartPriceOverflow();
+        if (_startPrice > (type(uint128).max / _amount)) {
+            revert AmountStartPriceOverflow();
         }
         Auction memory _auction = auction;
         if (_isAuctionActive(_auction, currentTime)) {
@@ -88,7 +86,7 @@ contract DutchAuction is OwnableRoles, ReentrancyGuard {
 
         emit AuctionStarted(_auction);
     }
-    
+
     function cancelAuction() public onlyOwnerOrRoles(ADMIN_ROLE) {
         delete auction;
         emit AuctionCancelled();
@@ -108,7 +106,7 @@ contract DutchAuction is OwnableRoles, ReentrancyGuard {
         }
         uint128 currentPrice = _getCurrentPrice(_auction, currentTime);
         uint128 delta_amount = _auction.amount - _amount;
-        if(delta_amount > 0) {
+        if (delta_amount > 0) {
             auction.amount = delta_amount;
         } else {
             delete auction;
@@ -118,34 +116,21 @@ contract DutchAuction is OwnableRoles, ReentrancyGuard {
     }
 
     function _fill(uint128 amount, uint128 price, uint64, uint64) internal virtual {
-      emit AuctionFilled(msg.sender, amount, price);
+        emit AuctionFilled(msg.sender, amount, price);
     }
 
-    function _isAuctionActive(
-        Auction memory _auction,
-        uint256 currentTime
-    ) internal pure returns (bool) {
-        return
-            _auction.startTime > 0 &&
-            _auction.startTime + _auction.duration > currentTime &&
-            currentTime >= _auction.startTime;
+    function _isAuctionActive(Auction memory _auction, uint256 currentTime) internal pure returns (bool) {
+        return _auction.startTime > 0 && _auction.startTime + _auction.duration > currentTime
+            && currentTime >= _auction.startTime;
     }
 
-    function _getCurrentPrice(
-        Auction memory _auction,
-        uint256 currentTime
-    ) internal pure returns (uint128) {
+    function _getCurrentPrice(Auction memory _auction, uint256 currentTime) internal pure returns (uint128) {
         uint256 delta_p = _auction.startPrice - _auction.endPrice;
         uint256 delta_t = _auction.duration - (currentTime - _auction.startTime);
-        return
-            uint128(
-                ((delta_p * delta_t) / _auction.duration) + _auction.endPrice
-            );
+        return uint128(((delta_p * delta_t) / _auction.duration) + _auction.endPrice);
     }
 
-    function getCurrentPrice(
-        uint256 currentTime
-    ) external view returns (uint128) {
+    function getCurrentPrice(uint256 currentTime) external view returns (uint128) {
         Auction memory _auction = auction;
         if (!_isAuctionActive(_auction, currentTime)) {
             revert AuctionNotActive();
@@ -153,10 +138,35 @@ contract DutchAuction is OwnableRoles, ReentrancyGuard {
         return _getCurrentPrice(_auction, currentTime);
     }
 
-    function isAuctionActive(
-        uint256 currentTime
-    ) external view returns (bool) {
+    function isAuctionActive(uint256 currentTime) external view returns (bool) {
         Auction memory _auction = auction;
         return _isAuctionActive(_auction, currentTime);
+    }
+
+    function _normalizePrice(uint256 price, uint256 amount) internal view returns (uint256) {
+        uint256 paymentTokenDecimals = IERC20Metadata(paymentToken).decimals();
+        uint256 priceDecimals = PRICE_DECIMALS;
+        uint256 purchaseTokenDecimals = IERC20Metadata(ethStrategy).decimals();
+        uint256 decimalsDifference;
+
+        if (purchaseTokenDecimals >= priceDecimals) {
+            decimalsDifference = purchaseTokenDecimals - priceDecimals;
+            price = price * (10 ** decimalsDifference);
+        } else {
+            decimalsDifference = priceDecimals - purchaseTokenDecimals;
+            price = price / (10 ** decimalsDifference);
+        }
+
+        uint256 finalPrice = price * amount;
+
+        if (paymentTokenDecimals >= purchaseTokenDecimals) {
+            decimalsDifference = paymentTokenDecimals - purchaseTokenDecimals;
+            finalPrice = finalPrice * (10 ** decimalsDifference);
+        } else {
+            decimalsDifference = purchaseTokenDecimals - paymentTokenDecimals;
+            finalPrice = finalPrice / (10 ** decimalsDifference);
+        }
+
+        return finalPrice / (10 ** purchaseTokenDecimals);
     }
 }

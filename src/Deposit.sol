@@ -12,6 +12,7 @@ contract Deposit is Ownable, ReentrancyGuard, AllowableAccounts {
   uint256 public immutable CONVERSION_RATE;
   uint256 public constant MIN_DEPOSIT = 1_000e18;
   uint256 public constant MAX_DEPOSIT = 5_000_000e18;
+  uint256 public constant DENOMINATOR_BP = 100_00;
 
   error DepositAmountTooLow();
   error DepositAmountTooHigh();
@@ -33,7 +34,6 @@ contract Deposit is Ownable, ReentrancyGuard, AllowableAccounts {
 
   uint256 public immutable conversionPremium;
   bool public whiteListEnabled;
-  uint256 public constant DENOMINATOR_BP = 100_00;
 
   uint256 private depositCap;
 

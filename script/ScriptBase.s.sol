@@ -4,9 +4,14 @@ import {console2} from "forge-std/console2.sol";
 import {Script} from "forge-std/Script.sol";
 
 abstract contract ScriptBase is Script {
+
+    enum Environment {
+        Undefined,
+        Testnet,
+        Mainnet
+    }
+
     struct DeployedConfig {
-        address AtmAuction;
-        address BondAuction;
         address Deposit;
         uint256 DepositCap;
         uint256 DepositConversionPremium;
@@ -33,15 +38,21 @@ abstract contract ScriptBase is Script {
     }
 
     function _printDeployedConfig(DeployedConfig memory config) internal pure {
-        console2.log("AtmAuction: ", config.AtmAuction);
-        console2.log("BondAuction: ", config.BondAuction);
-        console2.log("Deposit: ", config.Deposit);
-        console2.log("DepositCap: ", config.DepositCap);
+        console2.log("\n\n-------------------------------------------- Deployed Config --------------------------------------------");
+        console2.log("Deposit:                  ", config.Deposit);
+        console2.log("DepositCap:               ", config.DepositCap);
         console2.log("DepositConversionPremium: ", config.DepositConversionPremium);
-        console2.log("DepositConversionRate: ", config.DepositConversionRate);
-        console2.log("FlowStrategy: ", config.FlowStrategy);
-        console2.log("FlowStrategyGovernor: ", config.FlowStrategyGovernor);
-        console2.log("lst: ", config.lst);
+        console2.log("DepositConversionRate:    ", config.DepositConversionRate);
+        console2.log("FlowStrategy:             ", config.FlowStrategy);
+        console2.log("FlowStrategyGovernor:     ", config.FlowStrategyGovernor);
+        console2.log("LST:                      ", config.lst);
+        console2.log("ProposalThreshold:        ", config.proposalThreshold);
+        console2.log("QuorumPercentage:         ", config.quorumPercentage);
+        console2.log("StartBlock:               ", config.startBlock);
+        console2.log("VotingDelay:              ", config.votingDelay);
+        console2.log("VotingPeriod:             ", config.votingPeriod);
+        console2.log("Operator:                 ", config.operator);
+        console2.log("------------------------------------------------------------------------------------------------------\n\n");
     }
 
     function _parseDeployedConfig(string memory network) internal view returns (DeployedConfig memory) {
@@ -53,6 +64,7 @@ abstract contract ScriptBase is Script {
         return config;
     }
 
+/*
     function _decodeDeployConfig(string memory environment) internal view returns (DeployConfig memory) {
         string memory path = string.concat(vm.projectRoot(), "/", environment, ".deploy.config.json");
         string memory json = vm.readFile(path);
@@ -60,6 +72,7 @@ abstract contract ScriptBase is Script {
         DeployConfig memory config = abi.decode(data, (DeployConfig));
         return config;
     }
+    */
 
     function _writeDeploymentsJson(string memory environment, string memory output) internal {
         string memory deploymentsPath = string.concat("./", environment, ".deployments.json");

@@ -24,7 +24,7 @@ forge script script/AuctionStartAuction.s.sol:AuctionStartAuctionScript --rpc-ur
 
 ### Propose AtmAuction.startAuction()
 
-forge script script/GovernorPropose.s.sol:GovernorProposeScript --rpc-url <rpc-url> -vvvv --slow --legacy --broadcast
+forge script script/GovernorProposeAtmAuction.s.sol:GovernorProposeAtmAuctionScript --rpc-url <rpc-url> -vvvv --slow --legacy --broadcast
 
 ### Cast Vote
 

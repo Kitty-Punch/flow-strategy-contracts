@@ -34,7 +34,7 @@ contract DeployScript is ScriptBase {
     function _getGovernanceConfig() internal pure returns (GovernanceConfig memory) {
         GovernanceConfig memory governanceConfig;
         // Minimum token threshold to propose (e.g., 1000 tokens)
-        governanceConfig.proposalThreshold = 0;
+        governanceConfig.proposalThreshold = 1000e18;
         // The minimum number of cast voted required for a proposal to have a quorum.
         governanceConfig.quorumPercentage = 1;
         // Delay, between the proposal is created and the vote starts. The unit this duration is expressed in depends
@@ -48,10 +48,29 @@ contract DeployScript is ScriptBase {
         return governanceConfig;
     }
 
+    function _decodeDeployConfig(Environment environment) internal pure returns (DeployConfig memory config) {
+        if (environment == Environment.Testnet) {
+            config.depositCap = 5_000_000e18;
+            config.depositConversionRate = 10;
+            config.depositConversionPremium = 0;
+            config.lst = address(0x0);
+            config.usdc = address(0xd7d43ab7b365f0d0789aE83F4385fA710FfdC98F);
+            config.whiteListEnabled = true;
+        } else if (environment == Environment.Mainnet) {
+            config.depositCap = 0;
+            config.depositConversionRate = 0;
+            config.depositConversionPremium = 0;
+            config.lst = address(0x0);
+            config.usdc = address(0x0);
+            config.whiteListEnabled = false;
+        }
+        return config;
+    }
+
     function run() public {
         uint256 privateKeyUint = vm.envUint("PRIVATE_KEY");
         address publicKey = vm.addr(privateKeyUint);
-        string memory environment = "testnet"; // testnet or mainnet
+        Environment environment = Environment.Testnet;
         DeployConfig memory config = _decodeDeployConfig(environment);
         address operator = address(0xcd05082a302b70c96fc83B95775a1CA753d9A789);
 
@@ -92,9 +111,6 @@ contract DeployScript is ScriptBase {
             governanceConfig.votingPeriod,
             governanceConfig.proposalThreshold
         );
-        AtmAuction atmAuction = new AtmAuction(address(flowStrategy), address(flowStrategyGovernor), config.usdc);
-
-        BondAuction bondAuction = new BondAuction(address(flowStrategy), address(flowStrategyGovernor), config.usdc);
 
         Deposit deposit = new Deposit(
             address(flowStrategyGovernor),
@@ -107,16 +123,11 @@ contract DeployScript is ScriptBase {
         );
 
         deposit.addWhitelist(governanceConfig.whitelist);
-
-        flowStrategy.grantRoles(address(atmAuction), flowStrategy.MINTER_ROLE());
-        flowStrategy.grantRoles(address(bondAuction), flowStrategy.MINTER_ROLE());
         flowStrategy.grantRoles(address(deposit), flowStrategy.MINTER_ROLE());
         flowStrategy.mint(deployer, 1);
 
         flowStrategy.transferOwnership(address(flowStrategyGovernor));
 
-        deployedConfig.AtmAuction = address(atmAuction);
-        deployedConfig.BondAuction = address(bondAuction);
         deployedConfig.Deposit = address(deposit);
         deployedConfig.DepositCap = config.depositCap;
         deployedConfig.DepositConversionPremium = config.depositConversionPremium;
@@ -133,15 +144,14 @@ contract DeployScript is ScriptBase {
         deployedConfig.operator = operator;
     }
 
-    function _serializeDeployments(string memory environment, DeployedConfig memory deployedConfig)
+    function _serializeDeployments(Environment environment, DeployedConfig memory deployedConfig)
         internal
         returns (string memory)
     {
+        string memory environmentString = environment == Environment.Testnet ? "testnet" : "mainnet";
         string memory deployments = "deployments";
         vm.serializeAddress(deployments, "FlowStrategy", deployedConfig.FlowStrategy);
         vm.serializeAddress(deployments, "FlowStrategyGovernor", deployedConfig.FlowStrategyGovernor);
-        vm.serializeAddress(deployments, "AtmAuction", deployedConfig.AtmAuction);
-        vm.serializeAddress(deployments, "BondAuction", deployedConfig.BondAuction);
         vm.serializeAddress(deployments, "Deposit", deployedConfig.Deposit);
         vm.serializeUint(deployments, "DepositCap", deployedConfig.DepositCap);
         vm.serializeUint(deployments, "DepositConversionRate", deployedConfig.DepositConversionRate);
@@ -154,7 +164,7 @@ contract DeployScript is ScriptBase {
         vm.serializeUint(deployments, "votingDelay", deployedConfig.votingDelay);
         vm.serializeAddress(deployments, "operator", deployedConfig.operator);
         string memory output = vm.serializeUint(deployments, "votingPeriod", deployedConfig.votingPeriod);
-        _writeDeploymentsJson(environment, output);
+        _writeDeploymentsJson(environmentString, output);
         return output;
     }
 }
