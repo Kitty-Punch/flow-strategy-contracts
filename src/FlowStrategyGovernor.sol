@@ -6,7 +6,6 @@ import {GovernorCountingSimple} from "@openzeppelin/contracts/governance/extensi
 import {GovernorVotes} from "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
 import {GovernorVotesQuorumFraction} from
     "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
-import {TimelockController} from "@openzeppelin/contracts/governance/TimelockController.sol";
 import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import {IERC165} from "@openzeppelin/contracts/interfaces/IERC165.sol";
 

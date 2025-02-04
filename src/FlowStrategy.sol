@@ -4,7 +4,6 @@ pragma solidity 0.8.25;
 import {ERC20} from "solady/src/tokens/ERC20.sol";
 import {ERC20Votes} from "solady/src/tokens/ERC20Votes.sol";
 import {OwnableRoles} from "solady/src/auth/OwnableRoles.sol";
-import {SafeTransferLib} from "solady/src/utils/SafeTransferLib.sol";
 import {IFlowStrategy} from "./interfaces/IFlowStrategy.sol";
 
 contract FlowStrategy is ERC20Votes, OwnableRoles, IFlowStrategy {

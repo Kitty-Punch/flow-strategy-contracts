@@ -1,9 +1,7 @@
 pragma solidity 0.8.25;
 
 import {Ownable} from "solady/src/auth/Ownable.sol";
-import {SafeTransferLib} from "solady/src/utils/SafeTransferLib.sol";
 import {IFlowStrategy} from "./interfaces/IFlowStrategy.sol";
-import {SignatureCheckerLib} from "solady/src/utils/SignatureCheckerLib.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {AllowableAccounts} from "./AllowableAccounts.sol";
 
@@ -21,6 +19,11 @@ contract Deposit is Ownable, ReentrancyGuard, AllowableAccounts {
     error InvalidConversionPremium();
     error InvalidCall();
     error NotWhitelisted();
+    error InvalidOwner();
+    error InvalidFlowStrategy();
+    error InvalidOperator();
+    error InvalidConversionRate();
+    error InvalidDepositCap();
 
     event WhiteListEnabledSet(bool whiteListEnabled);
     event Deposited(address indexed user, uint256 indexed value, uint256 indexed amount, uint256 conversionRate);
@@ -43,28 +46,33 @@ contract Deposit is Ownable, ReentrancyGuard, AllowableAccounts {
 
     /// @notice constructor
     /// @param _owner the owner of the deposit contract
-    /// @param _ethStrategy the address of the ethstrategy token
+    /// @param _flowStrategy the address of the ethstrategy token
     /// @param _operator the address of the operator
     /// @param _conversionRate the conversion rate from eth to ethstrategy
     /// @param _conversionPremium the conversion premium in basis points (0 - 100_00)
     /// @param _depositCap the maximum global deposit cap
     constructor(
         address _owner,
-        address _ethStrategy,
+        address _flowStrategy,
         address _operator,
         uint256 _conversionRate,
         uint256 _conversionPremium,
         uint256 _depositCap,
         bool _whiteListEnabled
     ) {
+        if (_owner == address(0)) revert InvalidOwner();
+        if (_flowStrategy == address(0)) revert InvalidFlowStrategy();
+        if (_operator == address(0)) revert InvalidOperator();
+        if (_conversionRate == 0) revert InvalidConversionRate();
         if (_conversionPremium > DENOMINATOR_BP) revert InvalidConversionPremium();
+        if (_depositCap == 0) revert InvalidDepositCap();
         CONVERSION_RATE = _conversionRate;
-        _initializeOwner(_owner);
-        flowStrategy = _ethStrategy;
+        flowStrategy = _flowStrategy;
         operator = _operator;
         conversionPremium = _conversionPremium;
         depositCap = _depositCap;
         whiteListEnabled = _whiteListEnabled;
+        _initializeOwner(_owner);
     }
 
     /// @notice deposit flow and mint flow strategy
@@ -88,6 +96,7 @@ contract Deposit is Ownable, ReentrancyGuard, AllowableAccounts {
         amount = amount * (DENOMINATOR_BP - conversionPremium) / DENOMINATOR_BP;
 
         address payable recipient = payable(owner());
+        // slither-disable-next-line low-level-calls
         (bool success,) = recipient.call{value: msg.value}("");
         if (!success) revert DepositFailed();
 
@@ -106,6 +115,7 @@ contract Deposit is Ownable, ReentrancyGuard, AllowableAccounts {
     /// @param _operator the new operator
     /// @dev only the owner can set the operator
     function setOperator(address _operator) external onlyOperator {
+        if (_operator == address(0)) revert InvalidOperator();
         operator = _operator;
         emit OperatorSet(_operator);
     }

@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.25;
 
-import {ERC20} from "solady/src/tokens/ERC20.sol";
 import {OwnableRoles} from "solady/src/auth/OwnableRoles.sol";
-import {SafeTransferLib} from "solady/src/utils/SafeTransferLib.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 contract DutchAuction is OwnableRoles, ReentrancyGuard {
     error InvalidStartTime();
@@ -41,11 +38,11 @@ contract DutchAuction is OwnableRoles, ReentrancyGuard {
 
     uint8 public constant ADMIN_ROLE = 1;
 
-    constructor(address _ethStrategy, address _governor, address _paymentToken) {
-        require(_ethStrategy != address(0), "Strategy is invalid");
+    constructor(address _flowStrategy, address _governor, address _paymentToken) {
+        require(_flowStrategy != address(0), "Strategy is invalid");
         require(_governor != address(0), "Governor is invalid");
         require(_paymentToken != address(0), "Payment token is invalid");
-        flowStrategy = _ethStrategy;
+        flowStrategy = _flowStrategy;
         paymentToken = _paymentToken;
         _initializeOwner(_governor);
     }

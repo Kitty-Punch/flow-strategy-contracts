@@ -22,8 +22,8 @@ contract BondAuction is DutchAuction {
     mapping(address => Bond) public bonds;
     uint256 public constant REDEMPTION_WINDOW = 1 days;
 
-    constructor(address _ethStrategy, address _governor, address _paymentToken)
-        DutchAuction(_ethStrategy, _governor, _paymentToken)
+    constructor(address _flowStrategy, address _governor, address _paymentToken)
+        DutchAuction(_flowStrategy, _governor, _paymentToken)
     {}
 
     function _fill(uint128 amount, uint128 price, uint64 startTime, uint64 duration) internal override {
@@ -42,6 +42,7 @@ contract BondAuction is DutchAuction {
 
     function _redeem() internal {
         Bond memory bond = bonds[msg.sender];
+        // slither-disable-next-line incorrect-equality
         if (bond.startRedemption == 0) {
             revert NoBondToRedeem();
         }
@@ -65,6 +66,7 @@ contract BondAuction is DutchAuction {
 
     function _withdraw() internal {
         Bond memory bond = bonds[msg.sender];
+        // slither-disable-next-line incorrect-equality
         if (bond.startRedemption == 0) {
             revert NoBondToWithdraw();
         }
