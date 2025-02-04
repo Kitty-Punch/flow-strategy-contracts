@@ -14,8 +14,8 @@ contract AtmAuction is DutchAuction {
 
     function _fill(uint128 amount, uint128 price, uint64 startTime, uint64 duration) internal override {
         super._fill(amount, price, startTime, duration);
-        uint256 paymentAmount = TokenPriceLib._normalize(price, amount, PRICE_DECIMALS, paymentToken, ethStrategy);
+        uint256 paymentAmount = TokenPriceLib._normalize(price, amount, PRICE_DECIMALS, paymentToken, flowStrategy);
         SafeTransferLib.safeTransferFrom(paymentToken, msg.sender, owner(), paymentAmount);
-        IFlowStrategy(ethStrategy).mint(msg.sender, amount);
+        IFlowStrategy(flowStrategy).mint(msg.sender, amount);
     }
 }

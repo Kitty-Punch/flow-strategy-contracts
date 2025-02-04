@@ -26,7 +26,7 @@ contract Deposit is Ownable, ReentrancyGuard, AllowableAccounts {
     event Deposited(address indexed user, uint256 indexed value, uint256 indexed amount, uint256 conversionRate);
     event OperatorSet(address indexed operator);
 
-    address public immutable ethStrategy;
+    address public immutable flowStrategy;
     address public operator;
 
     mapping(address => bool) public hasRedeemed;
@@ -60,7 +60,7 @@ contract Deposit is Ownable, ReentrancyGuard, AllowableAccounts {
         if (_conversionPremium > DENOMINATOR_BP) revert InvalidConversionPremium();
         CONVERSION_RATE = _conversionRate;
         _initializeOwner(_owner);
-        ethStrategy = _ethStrategy;
+        flowStrategy = _ethStrategy;
         operator = _operator;
         conversionPremium = _conversionPremium;
         depositCap = _depositCap;
@@ -91,7 +91,7 @@ contract Deposit is Ownable, ReentrancyGuard, AllowableAccounts {
         (bool success,) = recipient.call{value: msg.value}("");
         if (!success) revert DepositFailed();
 
-        IFlowStrategy(ethStrategy).mint(msg.sender, amount);
+        IFlowStrategy(flowStrategy).mint(msg.sender, amount);
         emit Deposited(msg.sender, msg.value, amount, CONVERSION_RATE);
         return amount;
     }

@@ -15,9 +15,9 @@ contract DutchAuctionTest is BaseTest {
 
     function setUp() public virtual override {
         super.setUp();
-        dutchAuction = new DutchAuction(address(ethStrategy), address(governor), address(usdcToken));
+        dutchAuction = new DutchAuction(address(flowStrategy), address(governor), address(usdcToken));
         vm.startPrank(address(governor));
-        ethStrategy.grantRoles(address(dutchAuction), ethStrategy.MINTER_ROLE());
+        flowStrategy.grantRoles(address(dutchAuction), flowStrategy.MINTER_ROLE());
         dutchAuction.grantRoles(admin1.addr, dutchAuction.ADMIN_ROLE());
         dutchAuction.grantRoles(admin2.addr, dutchAuction.ADMIN_ROLE());
         vm.stopPrank();
@@ -469,9 +469,9 @@ contract DutchAuctionTest is BaseTest {
     }
 
     function test_constructor_valid() public {
-        DutchAuction _dutchAuction = new DutchAuction(address(ethStrategy), address(governor), address(usdcToken));
+        DutchAuction _dutchAuction = new DutchAuction(address(flowStrategy), address(governor), address(usdcToken));
 
-        assertEq(_dutchAuction.ethStrategy(), address(ethStrategy), "ethStrategy address incorrect");
+        assertEq(_dutchAuction.flowStrategy(), address(flowStrategy), "flowStrategy address incorrect");
         assertEq(_dutchAuction.paymentToken(), address(usdcToken), "paymentToken address incorrect");
         assertEq(_dutchAuction.owner(), address(governor), "owner address incorrect");
     }
@@ -483,12 +483,12 @@ contract DutchAuctionTest is BaseTest {
 
     function test_constructor_invalidGovernor() public {
         vm.expectRevert("Governor is invalid");
-        new DutchAuction(address(ethStrategy), address(0), address(usdcToken));
+        new DutchAuction(address(flowStrategy), address(0), address(usdcToken));
     }
 
     function test_constructor_invalidPaymentToken() public {
         vm.expectRevert("Payment token is invalid");
-        new DutchAuction(address(ethStrategy), address(governor), address(0));
+        new DutchAuction(address(flowStrategy), address(governor), address(0));
     }
 
     function test_constructor_constants() public view {

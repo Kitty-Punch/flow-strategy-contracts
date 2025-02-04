@@ -18,9 +18,9 @@ contract FlowStrategyGovernorTest is BaseTest {
 
     function setUp() public virtual override {
         super.setUp();
-        dutchAuction = new DutchAuction(address(ethStrategy), address(governor), address(usdcToken));
+        dutchAuction = new DutchAuction(address(flowStrategy), address(governor), address(usdcToken));
         vm.startPrank(address(governor));
-        ethStrategy.grantRoles(address(dutchAuction), ethStrategy.MINTER_ROLE());
+        flowStrategy.grantRoles(address(dutchAuction), flowStrategy.MINTER_ROLE());
         dutchAuction.grantRoles(admin1.addr, dutchAuction.ADMIN_ROLE());
         dutchAuction.grantRoles(admin2.addr, dutchAuction.ADMIN_ROLE());
         vm.stopPrank();
@@ -28,16 +28,16 @@ contract FlowStrategyGovernorTest is BaseTest {
 
     function test_proposal_success() public {
         vm.startPrank(address(dutchAuction));
-        ethStrategy.mint(alice, defaultAmount);
-        ethStrategy.mint(bob, defaultAmount);
-        ethStrategy.mint(charlie, defaultAmount);
+        flowStrategy.mint(alice, defaultAmount);
+        flowStrategy.mint(bob, defaultAmount);
+        flowStrategy.mint(charlie, defaultAmount);
         vm.stopPrank();
         vm.prank(alice);
-        ethStrategy.delegate(alice);
+        flowStrategy.delegate(alice);
         vm.prank(bob);
-        ethStrategy.delegate(bob);
+        flowStrategy.delegate(bob);
         vm.prank(charlie);
-        ethStrategy.delegate(charlie);
+        flowStrategy.delegate(charlie);
 
         address[] memory targets = new address[](1);
         targets[0] = address(dutchAuction);
@@ -103,13 +103,13 @@ contract FlowStrategyGovernorTest is BaseTest {
 
     function test_proposal_didNotReachQuorum() public {
         vm.startPrank(address(dutchAuction));
-        ethStrategy.mint(alice, defaultAmount * 97);
-        ethStrategy.mint(bob, defaultAmount * 3);
+        flowStrategy.mint(alice, defaultAmount * 97);
+        flowStrategy.mint(bob, defaultAmount * 3);
         vm.stopPrank();
         vm.prank(alice);
-        ethStrategy.delegate(alice);
+        flowStrategy.delegate(alice);
         vm.prank(bob);
-        ethStrategy.delegate(bob);
+        flowStrategy.delegate(bob);
 
         address[] memory targets = new address[](1);
         targets[0] = address(dutchAuction);
@@ -161,13 +161,13 @@ contract FlowStrategyGovernorTest is BaseTest {
 
     function test_proposal_defeated() public {
         vm.startPrank(address(dutchAuction));
-        ethStrategy.mint(alice, defaultAmount * 97);
-        ethStrategy.mint(bob, defaultAmount * 3);
+        flowStrategy.mint(alice, defaultAmount * 97);
+        flowStrategy.mint(bob, defaultAmount * 3);
         vm.stopPrank();
         vm.prank(alice);
-        ethStrategy.delegate(alice);
+        flowStrategy.delegate(alice);
         vm.prank(bob);
-        ethStrategy.delegate(bob);
+        flowStrategy.delegate(bob);
 
         address[] memory targets = new address[](1);
         targets[0] = address(dutchAuction);

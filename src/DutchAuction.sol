@@ -27,7 +27,7 @@ contract DutchAuction is OwnableRoles, ReentrancyGuard {
 
     Auction public auction;
 
-    address public immutable ethStrategy;
+    address public immutable flowStrategy;
     address public immutable paymentToken;
 
     uint8 public constant PRICE_DECIMALS = 6;
@@ -45,7 +45,7 @@ contract DutchAuction is OwnableRoles, ReentrancyGuard {
         require(_ethStrategy != address(0), "Strategy is invalid");
         require(_governor != address(0), "Governor is invalid");
         require(_paymentToken != address(0), "Payment token is invalid");
-        ethStrategy = _ethStrategy;
+        flowStrategy = _ethStrategy;
         paymentToken = _paymentToken;
         _initializeOwner(_governor);
     }

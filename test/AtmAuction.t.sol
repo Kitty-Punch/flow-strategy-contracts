@@ -10,24 +10,24 @@ import {console} from "forge-std/console.sol";
 contract AtmAuctionTest is DutchAuctionTest {
     function setUp() public override {
         super.setUp();
-        dutchAuction = new AtmAuction(address(ethStrategy), address(governor), address(usdcToken));
+        dutchAuction = new AtmAuction(address(flowStrategy), address(governor), address(usdcToken));
         vm.startPrank(address(governor));
-        ethStrategy.grantRoles(address(dutchAuction), ethStrategy.MINTER_ROLE());
+        flowStrategy.grantRoles(address(dutchAuction), flowStrategy.MINTER_ROLE());
         dutchAuction.grantRoles(admin1.addr, dutchAuction.ADMIN_ROLE());
         dutchAuction.grantRoles(admin2.addr, dutchAuction.ADMIN_ROLE());
         vm.stopPrank();
     }
 
     function test_constructor_success() public {
-        dutchAuction = new AtmAuction(address(ethStrategy), address(governor), address(usdcToken));
-        assertEq(dutchAuction.ethStrategy(), address(ethStrategy), "ethStrategy not assigned correctly");
+        dutchAuction = new AtmAuction(address(flowStrategy), address(governor), address(usdcToken));
+        assertEq(dutchAuction.flowStrategy(), address(flowStrategy), "flowStrategy not assigned correctly");
         assertEq(dutchAuction.paymentToken(), address(usdcToken), "paymentToken not assigned correctly");
         assertEq(dutchAuction.owner(), address(governor), "governor not assigned correctly");
     }
 
     function test_fill_success_1() public override {
         uint256 _normalizedPaymentPrice =
-            TokenPriceLib._normalize(defaultStartPrice, defaultAmount, 6, address(usdcToken), address(ethStrategy));
+            TokenPriceLib._normalize(defaultStartPrice, defaultAmount, 6, address(usdcToken), address(flowStrategy));
         mintAndApprove(alice, _normalizedPaymentPrice, address(dutchAuction), address(usdcToken));
         super.test_fill_success_1();
 
@@ -35,13 +35,13 @@ contract AtmAuctionTest is DutchAuctionTest {
         assertEq(
             usdcToken.balanceOf(address(governor)), _normalizedPaymentPrice, "usdcToken balance not assigned correctly"
         );
-        assertEq(ethStrategy.balanceOf(alice), defaultAmount, "ethStrategy balance not assigned correctly");
+        assertEq(flowStrategy.balanceOf(alice), defaultAmount, "flowStrategy balance not assigned correctly");
     }
 
     function test_fill_success_2() public override {
         uint256 _amount = defaultAmount - 1;
         uint256 _normalizedPaymentPrice =
-            TokenPriceLib._normalize(defaultStartPrice, _amount, 6, address(usdcToken), address(ethStrategy));
+            TokenPriceLib._normalize(defaultStartPrice, _amount, 6, address(usdcToken), address(flowStrategy));
         mintAndApprove(alice, _normalizedPaymentPrice, address(dutchAuction), address(usdcToken));
         super.test_fill_success_2();
 
@@ -49,7 +49,7 @@ contract AtmAuctionTest is DutchAuctionTest {
         assertEq(
             usdcToken.balanceOf(address(governor)), _normalizedPaymentPrice, "usdcToken balance not assigned correctly"
         );
-        assertEq(ethStrategy.balanceOf(alice), _amount, "ethStrategy balance not assigned correctly");
+        assertEq(flowStrategy.balanceOf(alice), _amount, "flowStrategy balance not assigned correctly");
     }
 
     function testFuzz_fill(
@@ -82,7 +82,7 @@ contract AtmAuctionTest is DutchAuctionTest {
 
         uint128 fillPrice = calculateFillPrice(_startTime, _duration, _startPrice, _endPrice, _elapsedTime);
         uint256 _normalizedPaymentPrice =
-            TokenPriceLib._normalize(fillPrice, _amount, 6, address(usdcToken), address(ethStrategy));
+            TokenPriceLib._normalize(fillPrice, _amount, 6, address(usdcToken), address(flowStrategy));
         mintAndApprove(alice, _normalizedPaymentPrice, address(dutchAuction), address(usdcToken));
 
         fill(_amount, _startTime, _duration, _startPrice, _endPrice, _elapsedTime, _totalAmount);
@@ -91,6 +91,6 @@ contract AtmAuctionTest is DutchAuctionTest {
         assertEq(
             usdcToken.balanceOf(address(governor)), _normalizedPaymentPrice, "usdcToken balance not assigned correctly"
         );
-        assertEq(ethStrategy.balanceOf(alice), _amount, "ethStrategy balance not assigned correctly");
+        assertEq(flowStrategy.balanceOf(alice), _amount, "flowStrategy balance not assigned correctly");
     }
 }

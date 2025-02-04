@@ -14,7 +14,7 @@ interface IERC20 {
 }
 
 contract BaseTest is Test {
-    FlowStrategy ethStrategy;
+    FlowStrategy flowStrategy;
     FlowStrategyGovernor governor;
     USDCToken usdcToken;
     Account initialOwner;
@@ -38,12 +38,12 @@ contract BaseTest is Test {
 
         usdcToken = new USDCToken();
 
-        ethStrategy = new FlowStrategy(initialOwner.addr);
+        flowStrategy = new FlowStrategy(initialOwner.addr);
         vm.prank(initialOwner.addr);
-        governor = new FlowStrategyGovernor(IVotes(address(ethStrategy)), 4, 7200, 50400, 0);
+        governor = new FlowStrategyGovernor(IVotes(address(flowStrategy)), 4, 7200, 50400, 0);
 
         vm.prank(initialOwner.addr);
-        ethStrategy.transferOwnership(address(governor));
+        flowStrategy.transferOwnership(address(governor));
         alice = address(1);
         vm.label(alice, "alice");
         bob = address(2);

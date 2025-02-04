@@ -31,7 +31,7 @@ contract BondAuction is DutchAuction {
         if (bonds[msg.sender].startRedemption != 0) {
             revert UnredeemedBond();
         }
-        uint256 paymentAmount = TokenPriceLib._normalize(price, amount, PRICE_DECIMALS, paymentToken, ethStrategy);
+        uint256 paymentAmount = TokenPriceLib._normalize(price, amount, PRICE_DECIMALS, paymentToken, flowStrategy);
         SafeTransferLib.safeTransferFrom(paymentToken, msg.sender, address(this), paymentAmount);
         bonds[msg.sender] = Bond({amount: amount, price: price, startRedemption: startTime + duration});
     }
@@ -54,9 +54,9 @@ contract BondAuction is DutchAuction {
         }
         delete bonds[msg.sender];
         uint256 paymentAmount =
-            TokenPriceLib._normalize(bond.price, bond.amount, PRICE_DECIMALS, paymentToken, ethStrategy);
+            TokenPriceLib._normalize(bond.price, bond.amount, PRICE_DECIMALS, paymentToken, flowStrategy);
         SafeTransferLib.safeTransfer(paymentToken, owner(), paymentAmount);
-        IFlowStrategy(ethStrategy).mint(msg.sender, bond.amount);
+        IFlowStrategy(flowStrategy).mint(msg.sender, bond.amount);
     }
 
     function withdraw() external {
@@ -73,7 +73,7 @@ contract BondAuction is DutchAuction {
             revert RedemptionWindowNotStarted();
         }
         uint256 paymentAmount =
-            TokenPriceLib._normalize(bond.price, bond.amount, PRICE_DECIMALS, paymentToken, ethStrategy);
+            TokenPriceLib._normalize(bond.price, bond.amount, PRICE_DECIMALS, paymentToken, flowStrategy);
         SafeTransferLib.safeTransfer(paymentToken, msg.sender, paymentAmount);
         delete bonds[msg.sender];
     }
