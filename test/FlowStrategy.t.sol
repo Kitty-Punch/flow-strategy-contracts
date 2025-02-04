@@ -43,7 +43,7 @@ function test_constructor_success() public {
 
   function test_symbol_success() public {
     FlowStrategy flowStrategy = new FlowStrategy(address(governor));
-    assertEq(flowStrategy.symbol(), "FLOWSR", "symbol not assigned correctly");
+    assertEq(flowStrategy.symbol(), "FLOWSTR", "symbol not assigned correctly");
   }
 
   function test_setIsTransferPaused_success() public {

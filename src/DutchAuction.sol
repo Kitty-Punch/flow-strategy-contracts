@@ -142,31 +142,4 @@ contract DutchAuction is OwnableRoles, ReentrancyGuard {
         Auction memory _auction = auction;
         return _isAuctionActive(_auction, currentTime);
     }
-
-    function _normalizePrice(uint256 price, uint256 amount) internal view returns (uint256) {
-        uint256 paymentTokenDecimals = IERC20Metadata(paymentToken).decimals();
-        uint256 priceDecimals = PRICE_DECIMALS;
-        uint256 purchaseTokenDecimals = IERC20Metadata(ethStrategy).decimals();
-        uint256 decimalsDifference;
-
-        if (purchaseTokenDecimals >= priceDecimals) {
-            decimalsDifference = purchaseTokenDecimals - priceDecimals;
-            price = price * (10 ** decimalsDifference);
-        } else {
-            decimalsDifference = priceDecimals - purchaseTokenDecimals;
-            price = price / (10 ** decimalsDifference);
-        }
-
-        uint256 finalPrice = price * amount;
-
-        if (paymentTokenDecimals >= purchaseTokenDecimals) {
-            decimalsDifference = paymentTokenDecimals - purchaseTokenDecimals;
-            finalPrice = finalPrice * (10 ** decimalsDifference);
-        } else {
-            decimalsDifference = purchaseTokenDecimals - paymentTokenDecimals;
-            finalPrice = finalPrice / (10 ** decimalsDifference);
-        }
-
-        return finalPrice / (10 ** purchaseTokenDecimals);
-    }
 }

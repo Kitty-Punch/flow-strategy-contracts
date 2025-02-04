@@ -4,6 +4,7 @@ pragma solidity 0.8.25;
 import {DutchAuction} from "./DutchAuction.sol";
 import {SafeTransferLib} from "solady/src/utils/SafeTransferLib.sol";
 import {IFlowStrategy} from "./interfaces/IFlowStrategy.sol";
+import {TokenPriceLib} from "./utils/TokenPriceLib.sol";
 
 contract BondAuction is DutchAuction {
 
@@ -28,7 +29,8 @@ contract BondAuction is DutchAuction {
         if(bonds[msg.sender].startRedemption != 0) {
           revert UnredeemedBond();
         }
-        SafeTransferLib.safeTransferFrom(paymentToken, msg.sender, address(this), amount * price);
+        uint256 paymentAmount = TokenPriceLib._normalize(price, amount, PRICE_DECIMALS, paymentToken, ethStrategy);
+        SafeTransferLib.safeTransferFrom(paymentToken, msg.sender, address(this), paymentAmount);
         bonds[msg.sender] = Bond({
           amount: amount,
           price: price,
@@ -53,7 +55,8 @@ contract BondAuction is DutchAuction {
         revert RedemptionWindowPassed();
       }
       delete bonds[msg.sender];
-      SafeTransferLib.safeTransfer(paymentToken, owner(), bond.amount * bond.price);
+      uint256 paymentAmount = TokenPriceLib._normalize(bond.price, bond.amount, PRICE_DECIMALS, paymentToken, ethStrategy);
+      SafeTransferLib.safeTransfer(paymentToken, owner(), paymentAmount);
       IFlowStrategy(ethStrategy).mint(msg.sender, bond.amount);
     }
 
@@ -70,7 +73,8 @@ contract BondAuction is DutchAuction {
       if(currentTime < bond.startRedemption) {
         revert RedemptionWindowNotStarted();
       }
-      SafeTransferLib.safeTransfer(paymentToken, msg.sender, bond.amount * bond.price);
+      uint256 paymentAmount = TokenPriceLib._normalize(bond.price, bond.amount, PRICE_DECIMALS, paymentToken, ethStrategy);
+      SafeTransferLib.safeTransfer(paymentToken, msg.sender, paymentAmount);
       delete bonds[msg.sender];
     }
 }

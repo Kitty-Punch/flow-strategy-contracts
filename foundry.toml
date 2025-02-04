@@ -20,4 +20,4 @@ local = "http://localhost:8545"
 [invariant]
 # runs = 50
 # depth = 40
-# fail_on_revert = false
+fail_on_revert = false

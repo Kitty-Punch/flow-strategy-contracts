@@ -31,7 +31,6 @@ contract DepositInvariantTest is Test {
         uint256 depositConversionPremium = 0;
         depositCap = 5000000000000000000000000;
         bool whiteListEnabled = true;
-        address lst = address(0x0);
 
         vm.startPrank(operator);
         flowStrategy = new FlowStrategy(operator);
