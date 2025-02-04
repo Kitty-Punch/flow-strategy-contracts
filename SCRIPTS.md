@@ -26,6 +26,10 @@ forge script script/AuctionStartAuction.s.sol:AuctionStartAuctionScript --rpc-ur
 
 forge script script/GovernorProposeAtmAuction.s.sol:GovernorProposeAtmAuctionScript --rpc-url <rpc-url> -vvvv --slow --legacy --broadcast
 
+### Propose BondAuction.startAuction()
+
+forge script script/GovernorProposeBondAuction.s.sol:GovernorProposeBondAuctionScript --rpc-url <rpc-url> -vvvv --slow --legacy --broadcast
+
 ### Cast Vote
 
 forge script script/GovernorCastVote.s.sol:GovernorCastVoteScript --rpc-url <rpc-url> -vvvv --slow --legacy --broadcast
@@ -37,6 +41,14 @@ forge script script/FlowStrategyDelegate.s.sol:FlowStrategyDelegateScript --rpc-
 ### Fill AtmAuction
 
 forge script script/AtmAuctionFill.s.sol:AtmAuctionFillScript --rpc-url <rpc-url> -vvvv --slow --legacy --broadcast 
+
+### Fill BondAuction
+
+forge script script/BondAuctionFill.s.sol:BondAuctionFillScript --rpc-url <rpc-url> -vvvv --slow --legacy --broadcast
+
+### Redeem BondAuction
+
+forge script script/BondAuctionRedeem.s.sol:BondAuctionRedeemScript --rpc-url <rpc-url> -vvvv --slow --legacy --broadcast
 
 ### Execute AtmAuction.startAuction()
 
