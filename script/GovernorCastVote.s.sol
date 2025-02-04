@@ -9,7 +9,7 @@ contract GovernorCastVoteScript is ScriptBase {
         string memory environment = "testnet"; // testnet or mainnet
         DeployedConfig memory config = _parseDeployedConfig(environment);
         FlowStrategyGovernor flowStrategyGovernor = FlowStrategyGovernor(payable(config.FlowStrategyGovernor));
-        uint256 proposalId = 19254627003779517890719061618727488503377821935171192491208680471597682554512;
+        uint256 proposalId = 113322774314426085437722907117863599454803136017943534095602900930200268271258;
         uint8 vote = 1;
 
         uint256 privateKey = vm.envUint("PRIVATE_KEY");

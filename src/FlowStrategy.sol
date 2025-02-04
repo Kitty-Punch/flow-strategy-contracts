@@ -11,10 +11,13 @@ contract FlowStrategy is ERC20Votes, OwnableRoles, IFlowStrategy {
     uint8 public constant MINTER_ROLE = 1;
     uint8 public constant PAUSER_ROLE = 2;
     bool public isTransferPaused = true;
+
     error TransferPaused();
+
     constructor(address _governor) {
         _initializeOwner(_governor);
     }
+
     function name() public view virtual override(ERC20, IFlowStrategy) returns (string memory) {
         return "FlowStrategy";
     }
@@ -32,7 +35,7 @@ contract FlowStrategy is ERC20Votes, OwnableRoles, IFlowStrategy {
     }
 
     function _beforeTokenTransfer(address from, address, uint256) internal virtual override {
-        if(from != address(0) && isTransferPaused) {
+        if (from != address(0) && isTransferPaused) {
             revert TransferPaused();
         }
     }

@@ -20,14 +20,15 @@ contract AtmAuctionFillScript is ScriptBase {
         console2.log("Amount:               ", amount);
         console2.log("Payment token:        ", address(paymentToken));
         console2.log("Payment token balance: ", paymentToken.balanceOf(executor));
-        (uint64 startTime, uint64 duration, uint128 startPrice, uint128 endPrice, uint128 _amount) = atmAuction.auction();
+        (uint64 startTime, uint64 duration, uint128 startPrice, uint128 endPrice, uint128 _amount) =
+            atmAuction.auction();
         console2.log("Start time:           ", startTime);
         console2.log("Block timestamp:      ", block.timestamp);
         console2.log("Duration:             ", duration);
         console2.log("Start price:          ", startPrice);
         console2.log("End price:            ", endPrice);
         console2.log("Amount:               ", _amount);
-        // 10000 
+        // 10000
 
         uint128 price = atmAuction.getCurrentPrice(block.timestamp);
         uint128 totalCost = amount * price;

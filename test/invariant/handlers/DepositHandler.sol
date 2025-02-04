@@ -8,7 +8,7 @@ import {IFlowStrategy} from "../../../src/interfaces/IFlowStrategy.sol";
 contract DepositHandler is CommonBase {
     Deposit internal _deposit;
     address internal _operator;
-    
+
     constructor(Deposit deposit) {
         _deposit = deposit;
         _operator = _deposit.operator();
@@ -23,7 +23,7 @@ contract DepositHandler is CommonBase {
 
         // Fund the depositor
         vm.deal(_depositor, _amount);
-        
+
         // Make deposit
         vm.startPrank(_depositor);
         shares = _deposit.deposit{value: _amount}();
@@ -48,4 +48,4 @@ contract DepositHandler is CommonBase {
         _deposit.setWhiteListEnabled(_enabled);
         vm.stopPrank();
     }
-} 
+}

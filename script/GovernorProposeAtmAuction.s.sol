@@ -9,14 +9,11 @@ import {OwnableRoles} from "solady/src/auth/OwnableRoles.sol";
 import {FlowStrategy} from "../src/FlowStrategy.sol";
 
 contract GovernorProposeAtmAuctionScript is GovernorProposeAuctionBaseScript {
-
-    function _getAuctionProposalData(Environment environment, FlowStrategyGovernor governor, FlowStrategy /*flowStrategy*/)
-        internal
-        view
-        virtual
-        override
-        returns (AuctionProposalData memory proposalData)
-    {
+    function _getAuctionProposalData(
+        Environment environment,
+        FlowStrategyGovernor governor,
+        FlowStrategy /*flowStrategy*/
+    ) internal view virtual override returns (AuctionProposalData memory proposalData) {
         if (environment == Environment.Undefined) {
             revert("Undefined environment");
         }
@@ -63,11 +60,7 @@ contract GovernorProposeAtmAuctionScript is GovernorProposeAuctionBaseScript {
     ) internal virtual override returns (address auction, uint256 proposalId) {
         auction = _createAuction(flowStrategyGovernor, flowStrategy, proposalData);
         bytes[] memory callDatas = new bytes[](2);
-        callDatas[0] = abi.encodeWithSelector(
-            OwnableRoles.grantRoles.selector,
-            auction,
-            flowStrategy.MINTER_ROLE()
-        );
+        callDatas[0] = abi.encodeWithSelector(OwnableRoles.grantRoles.selector, auction, flowStrategy.MINTER_ROLE());
         callDatas[1] = abi.encodeWithSelector(
             DutchAuction.startAuction.selector,
             proposalData.startTime,

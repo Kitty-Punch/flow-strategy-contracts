@@ -4,7 +4,6 @@ import {console2} from "forge-std/console2.sol";
 import {Script} from "forge-std/Script.sol";
 
 abstract contract ScriptBase is Script {
-
     enum Environment {
         Undefined,
         Testnet,
@@ -38,7 +37,9 @@ abstract contract ScriptBase is Script {
     }
 
     function _printDeployedConfig(DeployedConfig memory config) internal pure {
-        console2.log("\n\n-------------------------------------------- Deployed Config --------------------------------------------");
+        console2.log(
+            "\n\n-------------------------------------------- Deployed Config --------------------------------------------"
+        );
         console2.log("Deposit:                  ", config.Deposit);
         console2.log("DepositCap:               ", config.DepositCap);
         console2.log("DepositConversionPremium: ", config.DepositConversionPremium);
@@ -52,7 +53,9 @@ abstract contract ScriptBase is Script {
         console2.log("VotingDelay:              ", config.votingDelay);
         console2.log("VotingPeriod:             ", config.votingPeriod);
         console2.log("Operator:                 ", config.operator);
-        console2.log("------------------------------------------------------------------------------------------------------\n\n");
+        console2.log(
+            "------------------------------------------------------------------------------------------------------\n\n"
+        );
     }
 
     function _parseDeployedConfig(string memory network) internal view returns (DeployedConfig memory) {
@@ -64,7 +67,7 @@ abstract contract ScriptBase is Script {
         return config;
     }
 
-/*
+    /*
     function _decodeDeployConfig(string memory environment) internal view returns (DeployConfig memory) {
         string memory path = string.concat(vm.projectRoot(), "/", environment, ".deploy.config.json");
         string memory json = vm.readFile(path);

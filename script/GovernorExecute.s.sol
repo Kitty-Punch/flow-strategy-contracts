@@ -8,15 +8,14 @@ import {ScriptBase} from "./ScriptBase.s.sol";
 import {FlowStrategyGovernor} from "../src/FlowStrategyGovernor.sol";
 import {FlowStrategy} from "../src/FlowStrategy.sol";
 
-
 contract GovernorExecuteScript is ScriptBase {
     function run() public {
         string memory environment = "testnet"; // testnet or mainnet
         DeployedConfig memory config = _parseDeployedConfig(environment);
         FlowStrategyGovernor flowStrategyGovernor = FlowStrategyGovernor(payable(config.FlowStrategyGovernor));
         FlowStrategy flowStrategy = FlowStrategy(payable(config.FlowStrategy));
-        AtmAuction auction = AtmAuction(payable(0xDA7AD88EFACD79049aFf47C99f1f775f15F0b1dA));
-        uint64 _startTime = 1738559950;
+        AtmAuction auction = AtmAuction(payable(0xB6a79bc0ec9d2911951bF5998198ddCf4fF50C42));
+        uint64 _startTime = 1738622806;
         uint64 _duration = 15 hours;
         uint128 _startPrice = 10e6;
         uint128 _endPrice = 5e6;
@@ -32,25 +31,15 @@ contract GovernorExecuteScript is ScriptBase {
         values[1] = 0;
 
         bytes[] memory callDatas = new bytes[](2);
-        callDatas[0] = abi.encodeWithSelector(
-            OwnableRoles.grantRoles.selector,
-            auction,
-            flowStrategy.MINTER_ROLE()
-        );
+        callDatas[0] = abi.encodeWithSelector(OwnableRoles.grantRoles.selector, auction, flowStrategy.MINTER_ROLE());
         callDatas[1] = abi.encodeWithSelector(
-            DutchAuction.startAuction.selector,
-            _startTime,
-            _duration,
-            _startPrice,
-            _endPrice,
-            _amount
+            DutchAuction.startAuction.selector, _startTime, _duration, _startPrice, _endPrice, _amount
         );
-        
+
         string memory description = "Initial ATM auction.";
         bytes32 descriptionHash = keccak256(abi.encodePacked(description));
 
-        uint256 proposalId =
-            flowStrategyGovernor.hashProposal(targets, values, callDatas, descriptionHash);
+        uint256 proposalId = flowStrategyGovernor.hashProposal(targets, values, callDatas, descriptionHash);
 
         console2.log("Block timestamp:      ", block.timestamp);
         console2.log("Start time:           ", _startTime);
@@ -77,6 +66,5 @@ contract GovernorExecuteScript is ScriptBase {
             }
         */
         console2.log("Proposal State:       ", uint256(flowStrategyGovernor.state(proposalId)));
-        
     }
 }

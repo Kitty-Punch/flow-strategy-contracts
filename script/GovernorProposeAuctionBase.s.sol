@@ -8,7 +8,6 @@ import {FlowStrategyGovernor} from "../src/FlowStrategyGovernor.sol";
 import {FlowStrategy} from "../src/FlowStrategy.sol";
 
 abstract contract GovernorProposeAuctionBaseScript is ScriptBase {
-
     struct AuctionProposalData {
         address paymentToken;
         uint64 startTime;
@@ -44,7 +43,9 @@ abstract contract GovernorProposeAuctionBaseScript is ScriptBase {
         returns (AuctionProposalData memory proposalData);
 
     function _printProposalData(AuctionProposalData memory proposalData) internal pure {
-        console2.log("\n\n-------------------------------------------- Proposal Data --------------------------------------------");
+        console2.log(
+            "\n\n-------------------------------------------- Proposal Data --------------------------------------------"
+        );
         console2.log("Payment token:                ", proposalData.paymentToken);
         console2.log("Start time:                   ", proposalData.startTime);
         console2.log("Duration:                     ", proposalData.duration);
@@ -57,7 +58,9 @@ abstract contract GovernorProposeAuctionBaseScript is ScriptBase {
         console2.log("Deposit conversion rate:      ", proposalData.depositConversionRate);
         console2.log("LST:                          ", proposalData.lst);
         console2.log("White list enabled:           ", proposalData.whiteListEnabled);
-        console2.log("------------------------------------------------------------------------------------------------------------\n\n");
+        console2.log(
+            "------------------------------------------------------------------------------------------------------------\n\n"
+        );
     }
 
     function run() public {

@@ -14,13 +14,10 @@ contract DepositActorManager is CommonBase, StdCheats, StdUtils {
 
     uint256 public totalDeposited;
     uint256 public totalShares;
-    
-    constructor(
-        Deposit deposit,
-        DepositHandler[] memory handlers
-    ) {
+
+    constructor(Deposit deposit, DepositHandler[] memory handlers) {
         _deposit = deposit;
-        
+
         for (uint256 i = 0; i < handlers.length; i++) {
             _handlers.push(handlers[i]);
         }
@@ -49,4 +46,4 @@ contract DepositActorManager is CommonBase, StdCheats, StdUtils {
         DepositHandler handler = _handlers[bound(handlerIndex, 0, _handlers.length - 1)];
         handler.setWhiteListEnabled(enabled);
     }
-} 
+}
