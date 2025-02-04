@@ -9,9 +9,9 @@ out/
 docs/
 
 # Dotenv file
-!.env.template
 .env**
 **.env
+!.env.template
 
 dependencies/
 typescript/
