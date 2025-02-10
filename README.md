@@ -6,7 +6,7 @@ FlowStrategy (\$FLOWSTR) is a tokenized vehicle for FLOW accumulation, giving \$
 
 Think of FlowStrategy as **MicroStrategy, but entirely onchain and transparent**. If you’re familiar with how MicroStrategy operates, you already get the gist.
 
-**Note:** To maximize efficiency and capture staking yield, FlowStrategy will likely hold **wstETH** xinstead of plain FLOW.
+**Note:** To maximize efficiency and capture staking yield, FlowStrategy will likely hold **ankrFLOW** xinstead of plain FLOW.
 
 ---
 
