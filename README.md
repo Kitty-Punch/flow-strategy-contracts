@@ -1,8 +1,8 @@
-### **FlowStrategy ($FLOWSR)**
+### **FlowStrategy ($FLOWSTR)**
 
 #### **What is it?**
 
-FlowStrategy (\$FLOWSR) is a tokenized vehicle for FLOW accumulation, giving \$FLOWSR holders a claim on a growing pool of FLOW managed through fully transparent, onchain strategies.
+FlowStrategy (\$FLOWSTR) is a tokenized vehicle for FLOW accumulation, giving \$FLOWSTR holders a claim on a growing pool of FLOW managed through fully transparent, onchain strategies.
 
 Think of FlowStrategy as **MicroStrategy, but entirely onchain and transparent**. If you’re familiar with how MicroStrategy operates, you already get the gist.
 
@@ -14,42 +14,42 @@ Think of FlowStrategy as **MicroStrategy, but entirely onchain and transparent**
 
 1. **Seed Pool:**  
    * The protocol starts with an initial FLOW pool funded by early depositors.  
-   * Early backers receive $FLOWSR tokens, aligning their incentives with the protocol’s growth.  
+   * Early backers receive $FLOWSTR tokens, aligning their incentives with the protocol’s growth.  
 2. **Growth Mechanisms:**  
-   * **Convertible Bonds:** Users buy bonds with USDC. Proceeds are used to buy FLOW, growing the pool and increasing $ETHSR’s value.  
-   * **ATM Offerings:** If $FLOWSR trades at a premium to NAV, new tokens are sold at the market price. Proceeds are used to acquire more FLOW.  
-   * **Redemptions:** If $FLOWSR trades at a discount to NAV, holders can vote to redeem FLOW.
+   * **Convertible Bonds:** Users buy bonds with USDF. Proceeds are used to buy FLOW, growing the pool and increasing $FLOWSTR’s value.  
+   * **ATM Offerings:** If $FLOWSTR trades at a premium to NAV, new tokens are sold at the market price. Proceeds are used to acquire more FLOW.  
+   * **Redemptions:** If $FLOWSTR trades at a discount to NAV, holders can vote to redeem FLOW.
 
    ---
 
 ### **How It Works**
 
-#### **1\. Convertible Bonds (USDC for FLOW Acquisition):**
+#### **1\. Convertible Bonds (USDF for FLOW Acquisition):**
 
 FlowStrategy raises funds by issuing **onchain convertible bonds**, which are structured as follows:
 
 * **Initial Offering:**  
-  * Bonds are sold at a fixed price in USDC with a maturity date and a strike price in $FLOWSR.  
+  * Bonds are sold at a fixed price in USDF with a maturity date and a strike price in $FLOWSTR.  
 * **Conversion Option:**  
-  * At maturity, bondholders can convert bonds into $FLOWSR tokens if the token’s market price exceeds the strike price.  
-  * Conversion is performed onchain, allowing bondholders to capture appreciation in $ETHSR’s value.  
+  * At maturity, bondholders can convert bonds into $FLOWSTR tokens if the token’s market price exceeds the strike price.  
+  * Conversion is performed onchain, allowing bondholders to capture appreciation in $FLOWSTR’s value.  
 * **Redemption Option:**  
-  * If $ETHSR’s market price does not exceed the strike price, bondholders can redeem the bonds for their principal in USDC, potentially with a fixed yield.  
+  * If $FLOWSTR’s market price does not exceed the strike price, bondholders can redeem the bonds for their principal in USDF, potentially with a fixed yield.  
 * **Protocol Benefits:**  
-  * USDC raised is immediately used to buy FLOW, growing the pool and boosting $ETHSR’s NAV.  
+  * USDF raised is immediately used to buy FLOW, growing the pool and boosting $FLOWSTR’s NAV.  
   * Conversion aligns bondholder incentives with the protocol’s long-term success.
 
   ---
 
 #### **2\. At-The-Money (ATM) Offerings:**
 
-If $FLOWSR trades at a **premium to NAV**, FlowStrategy issues new tokens to capture demand and grow the FLOW pool.
+If $FLOWSTR trades at a **premium to NAV**, FlowStrategy issues new tokens to capture demand and grow the FLOW pool.
 
 * **Mechanism:**  
-  * New $FLOWSR tokens are sold at the market price, capped at a percentage per week to maintain upside for existing holders.  
+  * New $FLOWSTR tokens are sold at the market price, capped at a percentage per week to maintain upside for existing holders.  
   * Proceeds are used to buy FLOW and add it to the pool.  
 * **Benefits:**  
-  * Prevents runaway premiums by issuing tokens only when $FLOWSR is overvalued.  
+  * Prevents runaway premiums by issuing tokens only when $FLOWSTR is overvalued.  
   * Scales the FLOW pool efficiently, increasing NAV for all holders.
 
   
