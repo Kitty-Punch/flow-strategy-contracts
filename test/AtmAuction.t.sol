@@ -27,7 +27,7 @@ contract AtmAuctionTest is DutchAuctionTest {
 
     function test_fill_success_1() public override {
         uint256 _normalizedPaymentPrice =
-            TokenPriceLib._normalize(defaultStartPrice, defaultAmount, 6, address(usdcToken), address(flowStrategy));
+            TokenPriceLib._normalize(defaultStartPrice, defaultAmount, PRICE_DECIMALS, address(usdcToken), address(flowStrategy));
         mintAndApprove(alice, _normalizedPaymentPrice, address(dutchAuction), address(usdcToken));
         super.test_fill_success_1();
 
@@ -41,7 +41,7 @@ contract AtmAuctionTest is DutchAuctionTest {
     function test_fill_success_2() public override {
         uint256 _amount = defaultAmount - 1;
         uint256 _normalizedPaymentPrice =
-            TokenPriceLib._normalize(defaultStartPrice, _amount, 6, address(usdcToken), address(flowStrategy));
+            TokenPriceLib._normalize(defaultStartPrice, _amount, PRICE_DECIMALS, address(usdcToken), address(flowStrategy));
         mintAndApprove(alice, _normalizedPaymentPrice, address(dutchAuction), address(usdcToken));
         super.test_fill_success_2();
 
@@ -82,7 +82,7 @@ contract AtmAuctionTest is DutchAuctionTest {
 
         uint128 fillPrice = calculateFillPrice(_startTime, _duration, _startPrice, _endPrice, _elapsedTime);
         uint256 _normalizedPaymentPrice =
-            TokenPriceLib._normalize(fillPrice, _amount, 6, address(usdcToken), address(flowStrategy));
+            TokenPriceLib._normalize(fillPrice, _amount, PRICE_DECIMALS, address(usdcToken), address(flowStrategy));
         mintAndApprove(alice, _normalizedPaymentPrice, address(dutchAuction), address(usdcToken));
 
         fill(_amount, _startTime, _duration, _startPrice, _endPrice, _elapsedTime, _totalAmount);

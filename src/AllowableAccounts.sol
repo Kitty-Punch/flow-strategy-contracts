@@ -9,7 +9,6 @@ abstract contract AllowableAccounts {
     EnumerableSet.AddressSet private _whitelist;
 
     error AccountAlreadyAdded(address account);
-    error AccountNotAllowed(address account);
     error NoAccountsToAdd();
     error NoAccountsToRemove();
     error InvalidAccount(address account);

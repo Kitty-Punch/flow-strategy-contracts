@@ -208,7 +208,7 @@ contract DepositTest is BaseTest {
     }
 
     function test_setOperator_Unauthorized() public {
-        vm.expectRevert("Caller is not an operator");
+        vm.expectRevert("Caller is not owner or operator");
         deposit.setOperator(bob);
         assertEq(deposit.operator(), operator.addr, "operator incorrect");
     }
@@ -281,11 +281,13 @@ contract DepositTest is BaseTest {
         assertTrue(deposit.isWhitelisted(address(0x22)), "Second account not whitelisted");
     }
 
-    function test_addWhitelist_unauthorized() public {
+    function test_addWhitelist_unauthorized(address _notAuthorized) public {
+        vm.assume(_notAuthorized != operator.addr);
         address[] memory accounts = new address[](1);
         accounts[0] = address(0x11);
 
-        vm.expectRevert("Caller is not an operator");
+        vm.expectRevert("Caller is not owner or operator");
+        vm.prank(_notAuthorized);
         deposit.addWhitelist(accounts);
 
         assertFalse(deposit.isWhitelisted(address(0x11)), "Account should not be whitelisted");
@@ -362,7 +364,7 @@ contract DepositTest is BaseTest {
         address[] memory accounts = new address[](1);
         accounts[0] = address(0x11);
 
-        vm.expectRevert("Caller is not an operator");
+        vm.expectRevert("Caller is not owner or operator");
         deposit.removeWhitelist(accounts);
     }
 
@@ -459,7 +461,7 @@ contract DepositTest is BaseTest {
     }
 
     function test_setWhiteListEnabled_unauthorized() public {
-        vm.expectRevert("Caller is not an operator");
+        vm.expectRevert("Caller is not owner or operator");
         deposit.setWhiteListEnabled(false);
 
         assertTrue(deposit.whiteListEnabled(), "Whitelist state should not change");

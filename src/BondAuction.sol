@@ -74,9 +74,9 @@ contract BondAuction is DutchAuction {
         if (currentTime < bond.startRedemption) {
             revert RedemptionWindowNotStarted();
         }
+        delete bonds[msg.sender];
         uint256 paymentAmount =
             TokenPriceLib._normalize(bond.price, bond.amount, PRICE_DECIMALS, paymentToken, flowStrategy);
         SafeTransferLib.safeTransfer(paymentToken, msg.sender, paymentAmount);
-        delete bonds[msg.sender];
     }
 }

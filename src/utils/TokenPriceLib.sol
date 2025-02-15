@@ -6,7 +6,7 @@ import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IER
 library TokenPriceLib {
     uint256 constant DEFAULT_TOKEN_DECIMALS = 18;
 
-    // Price decimals are the decimals of the purchase token.
+    // Price decimals are the decimals of the payment token.
     // Purchase token decimals is 18.
     function _normalize(uint256 _price, uint256 _amount, address _paymentToken) internal view returns (uint256) {
         return _normalize(
@@ -18,7 +18,7 @@ library TokenPriceLib {
         );
     }
 
-    // Price decimals are the decimals of the purchase token.
+    // Price decimals are the decimals of the payment token.
     function _normalize(uint256 _price, uint256 _amount, address _paymentToken, address _purchaseToken)
         internal
         view
@@ -43,6 +43,7 @@ library TokenPriceLib {
         );
     }
 
+    // Warning: Intermediate calculations represent price with purchaseTokenDecimals which can lead to rounding errors.
     function _normalize(
         uint256 _price,
         uint256 _amount,

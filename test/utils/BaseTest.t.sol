@@ -73,8 +73,8 @@ contract BaseTest is Test {
         uint128 _endPrice,
         uint64 _currentTime
     ) public pure returns (uint128) {
-        uint64 delta_t = _duration - (_currentTime - _startTime);
+        uint64 delta_t = _duration - (_currentTime - _startTime) - 1;
         uint128 delta_p = _startPrice - _endPrice;
-        return uint128(((delta_p * delta_t) / _duration) + _endPrice);
+        return uint128(((delta_p * delta_t) / (_duration - 1) + _endPrice));
     }
 }

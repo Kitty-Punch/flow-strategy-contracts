@@ -39,8 +39,8 @@ contract Deposit is Ownable, ReentrancyGuard, AllowableAccounts {
 
     uint256 private depositCap;
 
-    modifier onlyOperator() {
-        require(msg.sender == operator, "Caller is not an operator");
+    modifier onlyOwnerOrOperator() {
+        require(msg.sender == owner() || msg.sender == operator, "Caller is not owner or operator");
         _;
     }
 
@@ -114,22 +114,22 @@ contract Deposit is Ownable, ReentrancyGuard, AllowableAccounts {
     /// @notice set the operator
     /// @param _operator the new operator
     /// @dev only the owner can set the operator
-    function setOperator(address _operator) external onlyOperator {
+    function setOperator(address _operator) external onlyOwnerOrOperator {
         if (_operator == address(0)) revert InvalidOperator();
         operator = _operator;
         emit OperatorSet(_operator);
     }
 
-    function setWhiteListEnabled(bool _whiteListEnabled) external onlyOperator {
+    function setWhiteListEnabled(bool _whiteListEnabled) external onlyOwnerOrOperator {
         whiteListEnabled = _whiteListEnabled;
         emit WhiteListEnabledSet(_whiteListEnabled);
     }
 
-    function addWhitelist(address[] memory _accounts) external onlyOperator {
+    function addWhitelist(address[] memory _accounts) external onlyOwnerOrOperator {
         _addWhitelist(_accounts);
     }
 
-    function removeWhitelist(address[] memory _accounts) external onlyOperator {
+    function removeWhitelist(address[] memory _accounts) external onlyOwnerOrOperator {
         _removeWhitelist(_accounts);
     }
 
