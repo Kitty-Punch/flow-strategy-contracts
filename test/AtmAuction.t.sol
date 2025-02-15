@@ -1,6 +1,7 @@
 pragma solidity 0.8.25;
 
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {TokenPriceLib} from "../src/utils/TokenPriceLib.sol";
 import {DutchAuctionTest} from "./DutchAuction.t.sol";
 import {AtmAuction} from "../src/AtmAuction.sol";
@@ -92,5 +93,44 @@ contract AtmAuctionTest is DutchAuctionTest {
             usdcToken.balanceOf(address(governor)), _normalizedPaymentPrice, "usdcToken balance not assigned correctly"
         );
         assertEq(flowStrategy.balanceOf(alice), _amount, "flowStrategy balance not assigned correctly");
+    }
+
+    function test_atm_rounding() public {
+        uint256 _amount = 1;
+        uint256 _normalizedPaymentPrice =
+            TokenPriceLib._normalize(defaultStartPrice, _amount, 6, address(usdcToken), address(flowStrategy));
+
+        vm.startPrank(admin1.addr);
+        DutchAuction.Auction memory auction = DutchAuction.Auction({
+            startTime: uint64(block.timestamp),
+            duration: defaultDuration,
+            startPrice: defaultStartPrice,
+            endPrice: defaultEndPrice,
+            amount: defaultAmount
+        });
+        vm.expectEmit();
+        emit DutchAuction.AuctionStarted(auction);
+        dutchAuction.startAuction(
+            uint64(block.timestamp), defaultDuration, defaultStartPrice, defaultEndPrice, defaultAmount
+        );
+        vm.stopPrank();
+        (uint64 startTime, uint64 duration, uint128 startPrice, uint128 endPrice, uint128 amount) =
+            dutchAuction.auction();
+        assertEq(startTime, uint64(block.timestamp), "startTime not assigned correctly");
+        assertEq(duration, defaultDuration, "duration not assigned correctly");
+        assertEq(startPrice, defaultStartPrice, "startPrice not assigned correctly");
+        assertEq(endPrice, defaultEndPrice, "endPrice not assigned correctly");
+        assertEq(amount, defaultAmount, "amount not assigned correctly");
+
+        usdcToken.mint(alice, _normalizedPaymentPrice);
+        vm.startPrank(alice);
+        usdcToken.approve(address(dutchAuction), _normalizedPaymentPrice);
+        dutchAuction.fill(1);
+
+        assertEq(
+            IERC20(dutchAuction.flowStrategy()).balanceOf(alice),
+            _normalizedPaymentPrice,
+            "amount not assigned correctly"
+        );
     }
 }
