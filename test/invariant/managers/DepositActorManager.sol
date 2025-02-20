@@ -15,8 +15,8 @@ contract DepositActorManager is CommonBase, StdCheats, StdUtils {
     uint256 public totalDeposited;
     uint256 public totalShares;
 
-    constructor(Deposit deposit, DepositHandler[] memory handlers) {
-        _deposit = deposit;
+    constructor(Deposit __deposit, DepositHandler[] memory handlers) {
+        _deposit = __deposit;
 
         for (uint256 i = 0; i < handlers.length; i++) {
             _handlers.push(handlers[i]);
