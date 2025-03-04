@@ -60,7 +60,7 @@ library TokenPriceLib {
             _price = _price * (10 ** decimalsDifference);
         } else {
             decimalsDifference = priceDecimals - purchaseTokenDecimals;
-            _price = _price / (10 ** decimalsDifference);
+            _price = (_price + 10 ** decimalsDifference - 1) / (10 ** decimalsDifference);
         }
 
         uint256 finalPrice = _price * _amount;
@@ -70,9 +70,9 @@ library TokenPriceLib {
             finalPrice = finalPrice * (10 ** decimalsDifference);
         } else {
             decimalsDifference = purchaseTokenDecimals - paymentTokenDecimals;
-            finalPrice = finalPrice / (10 ** decimalsDifference);
+            finalPrice = (finalPrice + 10 ** decimalsDifference - 1) / (10 ** decimalsDifference);
         }
 
-        return finalPrice / (10 ** purchaseTokenDecimals);
+        return (finalPrice + 10 ** purchaseTokenDecimals - 1) / (10 ** purchaseTokenDecimals);
     }
 }
