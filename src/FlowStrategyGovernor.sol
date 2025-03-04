@@ -29,11 +29,11 @@ contract FlowStrategyGovernor is Governor, GovernorVotes, GovernorCountingSimple
     // The following functions are overrides required by Solidity.
 
     function votingDelay() public view override returns (uint256) {
-        return votingDelay_; // 1 day at 12 sec block time
+        return votingDelay_; // 1 day at 0.8 sec block time
     }
 
     function votingPeriod() public view override returns (uint256) {
-        return votingPeriod_; // 1 week at 12 sec block time
+        return votingPeriod_; // 1 week at 0.8 sec block time
     }
 
     function proposalThreshold() public view override returns (uint256) {

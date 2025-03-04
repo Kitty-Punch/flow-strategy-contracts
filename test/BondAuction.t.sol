@@ -26,7 +26,7 @@ contract BondAuctionTest is DutchAuctionTest {
 
     function test_fill_success_1() public override {
         uint256 _normalizedPaymentPrice =
-            TokenPriceLib._normalize(defaultStartPrice, defaultAmount, 6, address(usdcToken), address(flowStrategy));
+            TokenPriceLib._normalize(defaultStartPrice, defaultAmount, PRICE_DECIMALS, address(usdcToken), address(flowStrategy));
         mintAndApprove(alice, _normalizedPaymentPrice, address(dutchAuction), address(usdcToken));
         super.test_fill_success_1();
 
@@ -46,7 +46,7 @@ contract BondAuctionTest is DutchAuctionTest {
     function test_fill_success_2() public override {
         uint256 _amount = defaultAmount - 1;
         uint256 _normalizedPaymentPrice =
-            TokenPriceLib._normalize(defaultStartPrice, _amount, 6, address(usdcToken), address(flowStrategy));
+            TokenPriceLib._normalize(defaultStartPrice, _amount, PRICE_DECIMALS, address(usdcToken), address(flowStrategy));
         mintAndApprove(alice, _normalizedPaymentPrice, address(dutchAuction), address(usdcToken));
         super.test_fill_success_2();
 
@@ -66,7 +66,7 @@ contract BondAuctionTest is DutchAuctionTest {
     function test_redeem_success() public {
         test_fill_success_1();
         uint256 _normalizedPaymentPrice =
-            TokenPriceLib._normalize(defaultStartPrice, defaultAmount, 6, address(usdcToken), address(flowStrategy));
+            TokenPriceLib._normalize(defaultStartPrice, defaultAmount, PRICE_DECIMALS, address(usdcToken), address(flowStrategy));
         BondAuction bondAuction = BondAuction(address(dutchAuction));
         vm.warp(block.timestamp + defaultDuration + 1);
         vm.prank(alice);
@@ -127,7 +127,7 @@ contract BondAuctionTest is DutchAuctionTest {
         vm.prank(alice);
         bondAuction.withdraw();
         uint256 _normalizedPaymentPrice =
-            TokenPriceLib._normalize(defaultStartPrice, defaultAmount, 6, address(usdcToken), address(flowStrategy));
+            TokenPriceLib._normalize(defaultStartPrice, defaultAmount, PRICE_DECIMALS, address(usdcToken), address(flowStrategy));
         assertEq(usdcToken.balanceOf(alice), _normalizedPaymentPrice, "usdcToken balance not assigned correctly");
         assertEq(usdcToken.balanceOf(address(dutchAuction)), 0, "usdcToken balance not assigned correctly");
         assertEq(flowStrategy.balanceOf(alice), 0, "flowStrategy balance not assigned correctly");
@@ -166,7 +166,7 @@ contract BondAuctionTest is DutchAuctionTest {
         uint64 expectedStartTime = uint64(block.timestamp);
         uint128 _amount = defaultAmount / 2;
         uint256 _normalizedPaymentPrice =
-            TokenPriceLib._normalize(defaultStartPrice, _amount, 6, address(usdcToken), address(flowStrategy));
+            TokenPriceLib._normalize(defaultStartPrice, _amount, PRICE_DECIMALS, address(usdcToken), address(flowStrategy));
         mintAndApprove(alice, _normalizedPaymentPrice, address(dutchAuction), address(usdcToken));
 
         test_startAuction_success_1();
@@ -236,7 +236,7 @@ contract BondAuctionTest is DutchAuctionTest {
 
         uint128 fillPrice = calculateFillPrice(_startTime, _duration, _startPrice, _endPrice, _elapsedTime);
         uint256 _normalizedPaymentPrice =
-            TokenPriceLib._normalize(fillPrice, _amount, 6, address(usdcToken), address(flowStrategy));
+            TokenPriceLib._normalize(fillPrice, _amount, PRICE_DECIMALS, address(usdcToken), address(flowStrategy));
         mintAndApprove(alice, _normalizedPaymentPrice, address(dutchAuction), address(usdcToken));
 
         fill(_amount, _startTime, _duration, _startPrice, _endPrice, _elapsedTime, _totalAmount);

@@ -8,6 +8,7 @@ import {FlowStrategyGovernor} from "../src/FlowStrategyGovernor.sol";
 import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import {Deposit} from "../src/Deposit.sol";
 import {ScriptBase} from "./ScriptBase.s.sol";
+import {BlockTimeLib} from "../src/utils/BlockTimeLib.sol";
 
 contract DeployScript is ScriptBase {
     struct GovernanceConfig {
@@ -39,11 +40,11 @@ contract DeployScript is ScriptBase {
         governanceConfig.quorumPercentage = 1;
         // Delay, between the proposal is created and the vote starts. The unit this duration is expressed in depends
         // on the clock (see ERC-6372) this contract uses.
-        governanceConfig.votingDelay = 10 seconds;
+        governanceConfig.votingDelay = BlockTimeLib._toBlocks(10 seconds);
         // Delay between the vote start and vote end. The unit this duration is expressed in depends on the clock (see ERC-6372) this contract uses.
         // NOTE: The {votingDelay} can delay the start of the vote. This must be considered when setting the voting
         // duration compared to the voting delay.
-        governanceConfig.votingPeriod = 10 minutes;
+        governanceConfig.votingPeriod = BlockTimeLib._toBlocks(10 minutes);
         governanceConfig.whitelist = _getWhitelist();
         return governanceConfig;
     }

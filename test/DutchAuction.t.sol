@@ -6,6 +6,9 @@ import {DutchAuction} from "../src/DutchAuction.sol";
 import {Ownable} from "solady/src/auth/OwnableRoles.sol";
 
 contract DutchAuctionTest is BaseTest {
+
+    uint8 public constant PRICE_DECIMALS = 8;
+
     DutchAuction dutchAuction;
 
     uint64 defaultDuration = 1 days;

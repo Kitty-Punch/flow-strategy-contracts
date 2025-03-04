@@ -27,7 +27,7 @@ contract DutchAuction is OwnableRoles, ReentrancyGuard {
     address public immutable flowStrategy;
     address public immutable paymentToken;
 
-    uint8 public constant PRICE_DECIMALS = 6;
+    uint8 public constant PRICE_DECIMALS = 8;
     uint64 public constant MAX_START_TIME_WINDOW = 7 days;
     uint64 public constant MAX_DURATION = 30 days;
 
@@ -68,7 +68,6 @@ contract DutchAuction is OwnableRoles, ReentrancyGuard {
         if (_isAuctionActive(_auction, currentTime)) {
             revert AuctionAlreadyActive();
         }
-        delete auction;
         if (_startPrice < _endPrice || _endPrice == 0) {
             revert InvalidStartPrice();
         }
@@ -123,8 +122,8 @@ contract DutchAuction is OwnableRoles, ReentrancyGuard {
 
     function _getCurrentPrice(Auction memory _auction, uint256 currentTime) internal pure returns (uint128) {
         uint256 delta_p = _auction.startPrice - _auction.endPrice;
-        uint256 delta_t = _auction.duration - (currentTime - _auction.startTime);
-        return uint128(((delta_p * delta_t) / _auction.duration) + _auction.endPrice);
+        uint256 delta_t = _auction.duration - (currentTime - _auction.startTime) - 1;
+        return uint128(((delta_p * delta_t) / (_auction.duration - 1) + _auction.endPrice));
     }
 
     function getCurrentPrice(uint256 currentTime) external view returns (uint128) {
