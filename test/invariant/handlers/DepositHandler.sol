@@ -9,8 +9,8 @@ contract DepositHandler is CommonBase {
     Deposit internal _deposit;
     address internal _operator;
 
-    constructor(Deposit deposit) {
-        _deposit = deposit;
+    constructor(Deposit __deposit) {
+        _deposit = __deposit;
         _operator = _deposit.operator();
     }
 
